@@ -2,6 +2,7 @@
   "Default Routes"
   (:require [clojure.java.io :as io]
             [io.pedestal.http.route :as prt]
+            [io.pedestal.http :as http]
             [io.pedestal.http.body-params :refer [body-params]]
             [response :as resp]))
 
@@ -40,17 +41,27 @@
     (#{"bob" "max"} name)  (str "Hi " name "! I know you")
     :else                  (str "hello, " name)))
 
-(defn greet [request]
+(defn greet-get [request]
   (if-let [greeting (greeting-for (get-in request [:query-params :name]))]
     (resp/ok {:reply greeting})
     (resp/not-found)))
 
+
+(defn greet
+  "Greet posted name, supporting JSON and EDN body format"
+  [request]
+  (let [name (some #(get-in request [% :name]) [:query-params :json-params :edn-params])]
+    (if-let [greeting (greeting-for name)]
+      (resp/ok {:reply greeting})
+      (resp/not-found))))
+
 ;; Routes -------------------------------------------------
 
-(def default-routes #{["/"      :get [home] :route-name :home]
-                      ["/echo"  :get [echo] :route-name :echo]
-                      ["/about" :get (conj common-interceptors about) :route-name :get-about]
-                      ["/greet" :get (conj common-interceptors greet) :route-name :get-greet]})
+(def default-routes #{["/"      :get  [home] :route-name :home]
+                      ["/echo"  :get  [echo] :route-name :echo]
+                      ["/about" :get  (conj common-interceptors about) :route-name :get-about]
+                      ["/greet" :get  (conj common-interceptors greet) :route-name :get-greet]
+                      ["/greet" :post (conj common-interceptors greet) :route-name :post-greet]})
 
 (def routes
   (prt/expand-routes default-routes))

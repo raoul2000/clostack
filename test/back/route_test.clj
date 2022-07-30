@@ -2,6 +2,7 @@
   (:require [server :as srv]
             [route :refer [default-routes]]
             [clojure.test :refer :all]
+            [clojure.data.json :as json]
             [io.pedestal.http :as http]
             [io.pedestal.http.route :as http.routes]
             [io.pedestal.test :refer [response-for]]))
@@ -36,27 +37,36 @@
     (let [response (response-for service :get "/about" :headers {"accept" "application/json"})]
       (is (= 200 (:status response)))
       (is (= "application/json" (content-type response)))))
-  
+
   (testing "route /greet with no param"
     (let [response (response-for service :get (url-for :get-greet))]
       (is (= 200 (:status response)))
       (is (= "text/plain" (content-type response)))
-      (is (= "{:reply \"hello, stranger\"}" (:body response)))
-      ))
-  
-  (testing "route /greet with unkown name query param"
+      (is (= "{:reply \"hello, stranger\"}" (:body response)))))
+
+  (testing "route /greet with unknown name query param"
     (let [response (response-for service :get (url-for :get-greet :query-params {:name "Alice"}))]
       (is (= 200 (:status response)))
       (is (= "text/plain" (content-type response)))
       (is (= "{:reply \"hello, Alice\"}" (:body response)))))
-  
-  (testing "route /greet with kown name query param"
-    (let [response (response-for service :get (url-for :get-greet :query-params {:name "bob"}))]
+
+  (testing "route /greet with known name query param and JSON response"
+    (let [response (response-for service 
+                                 :get (url-for :get-greet :query-params {:name "bob"})
+                                 :headers {"Accept"   "application/json"})]
       (is (= 200 (:status response)))
-      (is (= "text/plain" (content-type response)))
-      (is (= "{:reply \"Hi bob! I know you\"}" (:body response)))))
-  
-  )
+      (is (= "application/json" (content-type response)))
+      (is (= {:reply "Hi bob! I know you"} (json/read-str (:body response) :key-fn keyword)))))
+
+  (testing "route POST /greet2"
+    (let [response (response-for service
+                                 :post (url-for :post-greet)
+                                 :headers {"Content-Type" "application/json"
+                                           "Accept"       "application/json"}
+                                 :body (json/write-str {:name "bob"}))]
+      (is (= 200 (:status response)))
+      (is (= "application/json" (content-type response)))
+      (is (=  {:reply "Hi bob! I know you"} (json/read-str (:body response) :key-fn keyword))))))
 
 
 
