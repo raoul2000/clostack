@@ -3,7 +3,7 @@
   (:require [org.corfield.build :as bb]))
 
 (def lib 'raoul2000/clostack)
-(def version "0.0.1-SNAPSHOT")
+(def version "0.0.1")
 (def main 'core)
 
 (defn test "Run the tests." [opts]
