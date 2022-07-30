@@ -1,0 +1,21 @@
+
+GET {{baseUrl}}/
+
+###
+
+GET {{baseUrl}}/about
+
+###
+
+GET {{baseUrl}}/about
+Accept: application/json
+
+###
+
+GET {{baseUrl}}/about
+Accept: application/edn
+
+###
+GET {{baseUrl}}/about
+Accept: application/transit+json
+

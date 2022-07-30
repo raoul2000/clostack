@@ -1,0 +1,25 @@
+
+GET {{baseUrl}}/greet
+Accept: application/json
+
+###
+
+GET {{baseUrl}}/greet?name=Alice
+Accept: application/json
+
+###
+
+POST {{baseUrl}}/greet
+Accept: application/json
+Content-Type: application/json
+
+{
+    "name": "bob"
+}
+###
+
+POST {{baseUrl}}/greet
+Accept: application/json
+Content-Type: application/edn
+
+{:name "Alice"}
