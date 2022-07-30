@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
 
+## [unreleased]
+
+
 ## [0.0.1]
 ### Added
 - ready to use dev environment and tooling (see [README](README.md) for details)
