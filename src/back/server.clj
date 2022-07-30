@@ -8,7 +8,7 @@
    ::http/routes            routes
    ::http/type              :jetty
    ::http/resource-path     "/public"    ;; serve static resources from /resources/public
-                                         ;; http://localhost:8890/about.html
+                                         ;; http://localhost:8890/index.html
 
    ;; This is required for a static served HTML page to load JS
    ;; TODO: study this settings to use the appropriate values   

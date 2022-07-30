@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning].
 
 
 ## [unreleased]
-
+### Added
+- Back:
+  - new Routes:
+    - `GET  /greet`: query param *name*
 
 ## [0.0.1]
 ### Added

@@ -1,4 +1,5 @@
 (ns response
+  "Helpers function for working with response"
   (:require  [io.pedestal.http.content-negotiation :as conneg]
              [clojure.data.json :as json]
              [cognitect.transit :as transit])
