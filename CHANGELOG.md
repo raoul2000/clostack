@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning].
     - `GET /about` : returns version informations
     - `GET /echo` : returns the request data structure
     - `POST /upload` : multipart upload files
+    - `GET /download`: download a file
 
 <!-- Links -->
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/

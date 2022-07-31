@@ -4,7 +4,8 @@
             [io.pedestal.http.route :as prt]
             [io.pedestal.http.ring-middlewares :as ring-mw]
             [io.pedestal.http.body-params :refer [body-params]]
-            [response :as resp]))
+            [response :as resp]
+            [babashka.fs :as fs]))
 
 (def common-interceptors [resp/coerce-body resp/content-negotiator (body-params)])
 
@@ -73,6 +74,23 @@
 (defn upload-file [request]
   (resp/ok (:multipart-params request)))
 
+;; GET /download --------------------------------------------------------
+
+(def download-file
+  {:name ::download-file-handler
+   :enter (fn [context]
+            (assoc context :response
+                   (resp/ok (fs/file (fs/path (fs/cwd) "test" "back" "sample" "sample.pdf"))
+                            ;; set Content-Disposition header to force download.
+                            ;; Replace 'attachment' with 'inline' to ask the browser to show the
+                            ;; file content
+                            {"Content-Disposition" "inline; filename=\"filename.pdf\""}
+                            ;; Note that the Content-Type header is set by the ring-mw/file-info interceptor
+                            ;; (see route)
+                            ;; Other option is to force the Content-Type header :
+                            ;; "Content-Type" "image/jpg"
+                            )))})
+
 ;; Routes -------------------------------------------------
 
 (def default-routes #{["/"       :get  [home] :route-name :home]
@@ -82,8 +100,12 @@
                       ["/greet"  :post (conj common-interceptors greet) :route-name :post-greet]
                       ["/upload" :post (conj common-interceptors (ring-mw/multipart-params {:store       store-upload-file
                                                                                             :progress-fn upload-progress})
-                                             upload-file)
-                       :route-name :post-upload]})
+                                             upload-file)               :route-name :post-upload]
+                      ["/download"     :get   [;; file-info interceptor will set the content-type of the response
+                                               ;; based on the extension of the file to download. 
+                                               ;; If not set, content-type defaults to application/octet-stream 
+                                               (ring-mw/file-info)
+                                               download-file]           :route-name :get-download]})
 
 (def routes
   (prt/expand-routes default-routes))
