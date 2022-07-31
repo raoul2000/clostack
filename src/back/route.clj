@@ -1,8 +1,8 @@
 (ns route
-  "Default Routes"
+  "Default Routes dedicated to illustrate some pedestal's feature"
   (:require [clojure.java.io :as io]
             [io.pedestal.http.route :as prt]
-            [io.pedestal.http :as http]
+            [io.pedestal.http.ring-middlewares :as ring-mw]
             [io.pedestal.http.body-params :refer [body-params]]
             [response :as resp]))
 
@@ -41,12 +41,6 @@
     (#{"bob" "max"} name)  (str "Hi " name "! I know you")
     :else                  (str "hello, " name)))
 
-(defn greet-get [request]
-  (if-let [greeting (greeting-for (get-in request [:query-params :name]))]
-    (resp/ok {:reply greeting})
-    (resp/not-found)))
-
-
 (defn greet
   "Greet posted name, supporting JSON and EDN body format"
   [request]
@@ -55,13 +49,41 @@
       (resp/ok {:reply greeting})
       (resp/not-found))))
 
+;; POST /upload --------------------------------------------
+
+(defn store-upload-file
+  "Store the file being uploaded given a map describing it. Map keys are:
+   
+   - `:filename`
+   - `:stream`
+   - `:content-type`
+   
+   The return value will be used as the value for the parameter in the multipart 
+   parameter map.
+
+   see [wrap-multipart-params](https://ring-clojure.github.io/ring/ring.middleware.multipart-params.html#var-multipart-params-request)"
+  [item]
+  (let [file-destination-path  (str "c:\\tmp\\" (:filename item))]
+    (io/copy (:stream item) (io/file file-destination-path))
+    {:file-destination-path file-destination-path}))
+
+(defn upload-progress [request bytes-read content-length item-count]
+  (print (format "item : %d - \ncontent length : %d\nbytes-read : %d" item-count content-length bytes-read)))
+
+(defn upload-file [request]
+  (resp/ok (:multipart-params request)))
+
 ;; Routes -------------------------------------------------
 
-(def default-routes #{["/"      :get  [home] :route-name :home]
-                      ["/echo"  :get  [echo] :route-name :echo]
-                      ["/about" :get  (conj common-interceptors about) :route-name :get-about]
-                      ["/greet" :get  (conj common-interceptors greet) :route-name :get-greet]
-                      ["/greet" :post (conj common-interceptors greet) :route-name :post-greet]})
+(def default-routes #{["/"       :get  [home] :route-name :home]
+                      ["/echo"   :get  [echo] :route-name :echo]
+                      ["/about"  :get  (conj common-interceptors about) :route-name :get-about]
+                      ["/greet"  :get  (conj common-interceptors greet) :route-name :get-greet]
+                      ["/greet"  :post (conj common-interceptors greet) :route-name :post-greet]
+                      ["/upload" :post (conj common-interceptors (ring-mw/multipart-params {:store       store-upload-file
+                                                                                            :progress-fn upload-progress})
+                                             upload-file)
+                       :route-name :post-upload]})
 
 (def routes
   (prt/expand-routes default-routes))

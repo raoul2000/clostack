@@ -1,0 +1,17 @@
+
+POST {{baseUrl}}/upload
+Accept: application/json
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="uploaded-kitty-1.jpg"
+Content-Type: image/png
+
+< ./kitty.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="uploaded-kitty-2.jpg"
+Content-Type: image/png
+
+< ./kitty.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+

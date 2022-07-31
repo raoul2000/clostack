@@ -51,14 +51,14 @@
       (is (= "{:reply \"hello, Alice\"}" (:body response)))))
 
   (testing "route /greet with known name query param and JSON response"
-    (let [response (response-for service 
+    (let [response (response-for service
                                  :get (url-for :get-greet :query-params {:name "bob"})
                                  :headers {"Accept"   "application/json"})]
       (is (= 200 (:status response)))
       (is (= "application/json" (content-type response)))
       (is (= {:reply "Hi bob! I know you"} (json/read-str (:body response) :key-fn keyword)))))
 
-  (testing "route POST /greet2"
+  (testing "route POST /greet"
     (let [response (response-for service
                                  :post (url-for :post-greet)
                                  :headers {"Content-Type" "application/json"
@@ -66,8 +66,25 @@
                                  :body (json/write-str {:name "bob"}))]
       (is (= 200 (:status response)))
       (is (= "application/json" (content-type response)))
-      (is (=  {:reply "Hi bob! I know you"} (json/read-str (:body response) :key-fn keyword))))))
+      (is (=  {:reply "Hi bob! I know you"} (json/read-str (:body response) :key-fn keyword)))))
 
+  (testing "route POST /upload"
+    (let [form-body (str "--XXXX\r\n"
+                         "Content-Disposition: form-data; name=\"file1\"; filename=\"foobar1.txt\"\r\n\r\n"
+                         "bar\r\n"
+                         "--XXXX\r\n"
+                         "Content-Disposition: form-data; name=\"file2\"; filename=\"foobar2.txt\"\r\n\r\n"
+                         "baz\r\n"
+                         "--XXXX--")
 
+          response (response-for service
+                                 :post    (url-for :post-upload)
+                                 :body    form-body
+                                 :headers {"Content-Type" "multipart/form-data; boundary=XXXX"
+                                           "Accept"       "application/json"})]
 
-
+      (is (= 200 (:status response)))
+      (let [body (:body response)
+            body-map (json/read-str  body :key-fn keyword)]
+        (is  (:file1 body-map))
+        (is  (:file2 body-map))))))

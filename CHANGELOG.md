@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning].
     - `GET /` : responds with the content of `resources/public/index.html`
     - `GET /about` : returns version informations
     - `GET /echo` : returns the request data structure
+    - `POST /upload` : multipart upload files
 
 <!-- Links -->
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
