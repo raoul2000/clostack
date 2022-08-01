@@ -82,8 +82,10 @@ $ npm run watch-test
 By default, server responds to `http://localhost:8890/index.html`.
 
 - run the project directly
-```shell
+```bash
 $ clojure -M:run-m
+# with options ...
+$ clojure -M:run-m --help
 ```
 - run tests
 ```shell

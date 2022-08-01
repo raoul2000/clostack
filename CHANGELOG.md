@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning].
     - `POST /upload` : multipart upload files
     - `GET /download`: download a file
   - Command Line :
-    - `-n` or ``--no-browser` : when set, default browser is *not* opened on startup
+    - `-n` or `--no-browser` : when set, default browser is *not* opened on startup
 
 <!-- Links -->
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
