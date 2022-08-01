@@ -38,7 +38,7 @@ Managed by [Shadow-cljs](https://shadow-cljs.github.io/docs/UsersGuide.html) (se
 
 Powered by [Pedestal](http://pedestal.io/) (see [configuration file](deps.edn) for details).
 
-- Command line arguments
+- Command line interface (use `--help` to get full options list)
 - Content Negociation
 - *dev* and *production* running mode
 

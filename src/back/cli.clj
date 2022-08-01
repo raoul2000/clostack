@@ -1,4 +1,5 @@
 (ns cli
+  "Command Line Arguments module"
   (:require [clojure.string    :refer [join]]
             [clojure.tools.cli :refer [parse-opts]]))
 
@@ -10,12 +11,13 @@
     :parse-fn #(Integer/parseInt %)
     :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]
 
+   ["-n" "--no-browser" "Do not open browser on startup"]
    ;; A boolean option defaulting to nil
    ["-h" "--help"]])
 
 (defn usage [parsed-opts]
   (->> [""
-        "usage: java -jar server-X.X.X.jar [options]"
+        "usage: java -jar clostack-X.X.X.jar [options]"
         ""
         "Options:"
         (:summary parsed-opts)
@@ -36,6 +38,5 @@
 
 (comment
   (parse-cli-options ["--port" "8000"])
-  (parse-cli-options [])
   ;;
   )
