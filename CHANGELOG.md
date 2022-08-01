@@ -6,25 +6,23 @@ The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
 
-## [unreleased]
-### Added
-- Back:
-  - new Routes:
-    - `GET  /greet`: query param *name*
-
-## [0.0.1]
-### Added
+## [0.0.2]
 - ready to use dev environment and tooling (see [README](README.md) for details)
 - Front: basic `index.html` page with React component and simple CSS styles
 - Back: 
   - REST API Routes:
     - `GET /` : responds with the content of `resources/public/index.html`
+    - `GET  /greet`: query param *name*
     - `GET /about` : returns version informations
     - `GET /echo` : returns the request data structure
     - `POST /upload` : multipart upload files
     - `GET /download`: download a file
   - Command Line :
     - `-n` or `--no-browser` : when set, default browser is *not* opened on startup
+
+## [0.0.1]
+- initial release
+
 
 <!-- Links -->
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
