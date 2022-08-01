@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
 
+## [unreleased]
+
+
+
+
+
 ## [0.0.2]
 - ready to use dev environment and tooling (see [README](README.md) for details)
 - Front: basic `index.html` page with React component and simple CSS styles
