@@ -5,7 +5,8 @@
   "test/front"]
 
  :dependencies
- [[reagent                     "1.1.1"]]
+ [[reagent                     "1.1.1"]
+  [re-frame                    "1.2.0"]]
 
  :dev-http {8000 "resources/public"
             8021 "out/test"}

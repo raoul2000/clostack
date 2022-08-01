@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning].
 
 
 ## [unreleased]
-
-
+### Added
+- Front:
+  - add dependency to [Re-frame](https://day8.github.io/re-frame/)
 
 
 

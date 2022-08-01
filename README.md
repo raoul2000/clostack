@@ -33,6 +33,7 @@ Recommended:
 Managed by [Shadow-cljs](https://shadow-cljs.github.io/docs/UsersGuide.html) (see [configuration file](shadow-cljs.edn) for details).
 
 - React (with [reagent](https://cljdoc.org/d/reagent/reagent/1.1.1/doc/documentation-index))
+- [Re-Frame](https://day8.github.io/re-frame/)
 
 ## Backend
 
