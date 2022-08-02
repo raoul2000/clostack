@@ -11,4 +11,7 @@
                 :type      :text
                 :on-change #(reset! username (-> % .-target .-value))}]
        [:button {:on-click #(say-hi-to  @username)} "Say Hi"]
-       [:div @(rf/subscribe [:username])]])))
+       [:div @(rf/subscribe [:username])]
+       [:div (when @(rf/subscribe [:saying-hi]) "true")]
+       
+       ])))

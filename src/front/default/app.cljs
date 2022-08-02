@@ -4,7 +4,7 @@
             [default.views :as views]
             [default.events :as events]
             [default.subs :as subs]
-            ))
+            [day8.re-frame.http-fx]))
 
 (defn app-page []
   [:div#someId.someClass

@@ -6,3 +6,7 @@
 (rf/reg-sub  :username
              (fn [db _]
                (:username db)))
+
+(rf/reg-sub  :saying-hi
+             (fn [db _]
+               (:saying-hi db)))
