@@ -13,7 +13,9 @@
  (fn [db [_ result]]
    (js/console.log result)
    (rf/dispatch [:saying-hi false])
-   (assoc db :said-hi-success result)))
+   (-> db
+       (assoc :said-hi-success result)
+       (assoc :greet-from-server (:reply result)))))
 
 (rf/reg-event-db
  :said-hi-failure
@@ -38,6 +40,7 @@
    {:db (assoc (:db cofx) :username username)
     :http-xhrio {:method          :get
                  :uri             "/greet"
+                 :params          {:name username}
                  :timeout         8000                                           ;; optional see API docs
                  :response-format (ajax/json-response-format {:keywords? true})  ;; IMPORTANT!: You must provide this.
                  :on-success      [:said-hi-success]

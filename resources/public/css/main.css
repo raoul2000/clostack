@@ -9,3 +9,10 @@ img.clojureLogo {
     width: 100px;
     height: 100px;
 }
+
+.widget-container {
+  padding:1em;
+  margin:1em;
+  border:5px solid rgb(242, 242, 242);
+  border-radius: 5px;
+}
