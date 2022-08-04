@@ -12,6 +12,6 @@
 (deftest adding-one
   (is (= 2 (add-one 1))))
 
-(deftest failing-test
-  (is (= 1 12) "1 is not equal to 2"))
+;;(deftest failing-test
+;;  (is (= 1 12) "1 is not equal to 2"))
 
