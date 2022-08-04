@@ -3,49 +3,62 @@
             [ajax.core :as ajax]))
 
 ;; signals that the action to say hi to the server is in progress (true) or not (false)
+(defn saying-hi-handler [db [_ in-progress]]
+  (assoc db :saying-hi in-progress))
+
 (rf/reg-event-db
  :saying-hi
- (fn [db [_ in-progress]]
-   (assoc db :saying-hi in-progress)))
+ saying-hi-handler)
 
-(rf/reg-event-db
+;; success on saying hi to the server
+(defn said-hi-success-handler [cofx [_ result]]
+  {:db (-> (:db cofx)
+           (assoc :said-hi-success result)
+           (assoc :greet-from-server (:reply result)))
+   :fx (conj (:fx cofx)  [:dispatch-later {:ms 1000 
+                                           :dispatch [:saying-hi false]}])})
+
+(rf/reg-event-fx
  :said-hi-success
- (fn [db [_ result]]
-   (js/console.log result)
-   (rf/dispatch [:saying-hi false])
-   (-> db
-       (assoc :said-hi-success result)
-       (assoc :greet-from-server (:reply result)))))
+ said-hi-success-handler)
 
-(rf/reg-event-db
+;; failed on saying hi to the server
+(defn said-hi-failure-handler [cofx [_ result]]
+  {:db (assoc (:db cofx)  :said-hi-error result)
+   :fx (conj (:fx cofx) [:dispatch [:saying-hi false]])})
+
+(rf/reg-event-fx
  :said-hi-failure
- (fn [db [_ result]]
-   (js/console.log result)
-   (rf/dispatch [:saying-hi false])
-   (assoc db :said-hi-failure result)))
+ said-hi-failure-handler)
 
-
+;; regsiter an effect that displays greet message to the console
 (rf/reg-fx
- :say-hi-to
+ :say-hi-to-console
  (fn [username]
-   (rf/dispatch [:saying-hi true])
+   ;;(rf/dispatch [:saying-hi true])
    (js/setTimeout  (fn []
-                     (js/console.log (str "fx: saying hi to " username))
-                     (rf/dispatch [:saying-hi false]))
+                     (js/console.log (str "fx: saying hi to " username)))
                    1000)))
+
+;; say hi to the server 
+(defn  say-hi-handler
+  "Event handler to say hi to the server"
+  [cofx [_ username]]
+  {:db (assoc (:db cofx) :username username)
+   :http-xhrio       {:method          :get
+                      :uri             "/greet"
+                      :params          {:name username}
+                      :timeout         8000                                           ;; optional see API docs
+                      :response-format (ajax/json-response-format {:keywords? true})  ;; IMPORTANT!: You must provide this.
+                      :on-success      [:said-hi-success]
+                      :on-failure      [:said-hi-failure]}
+   :say-hi-to-console username
+   :fx (conj (:fx cofx) [:dispatch [:saying-hi true]])})
 
 (rf/reg-event-fx
  :say-hi
- (fn [cofx [_ username]]
-   {:db (assoc (:db cofx) :username username)
-    :http-xhrio {:method          :get
-                 :uri             "/greet"
-                 :params          {:name username}
-                 :timeout         8000                                           ;; optional see API docs
-                 :response-format (ajax/json-response-format {:keywords? true})  ;; IMPORTANT!: You must provide this.
-                 :on-success      [:said-hi-success]
-                 :on-failure      [:said-hi-failure]}
-    :say-hi-to username}))
+ say-hi-handler)
+
 
 (defn say-hi-to
   "User with name *username* is saying 'Hi' to the server"

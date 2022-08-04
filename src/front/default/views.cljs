@@ -5,7 +5,8 @@
             [default.events :refer [say-hi-to]]))
 
 (defn say-hi-widget []
-  (let [username (r/atom "")]
+  (let [username (r/atom "")
+        update-username #(reset! username (-> % .-target .-value))]
     (fn []
       (let [username-val @username
             empty-username? (zero? (count (s/trim username-val)))]
@@ -14,7 +15,7 @@
          
          [:input {:id        "say-hi"
                   :type      :text
-                  :on-change #(reset! username (-> % .-target .-value))}]
+                  :on-change update-username}]
          
            [:button {:on-click #(say-hi-to @username)
                      :disabled empty-username?} "Say Hi"]
