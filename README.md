@@ -34,6 +34,9 @@ Managed by [Shadow-cljs](https://shadow-cljs.github.io/docs/UsersGuide.html) (se
 
 - React (with [reagent](https://cljdoc.org/d/reagent/reagent/1.1.1/doc/documentation-index))
 - [Re-Frame](https://day8.github.io/re-frame/)
+- Dev tools
+  - [re-frame-10x](https://github.com/day8/re-frame-10x): instrument, and then inspect, the inner workings of a running re-frame application
+  - [cljs-devtools](https://github.com/binaryage/cljs-devtools): adds enhancements into Chrome DevTools for ClojureScript developers
 
 ## Backend
 
@@ -95,11 +98,22 @@ $ clojure -T:build test
 
 ### Build for Production
 
+- build the frontend app
+```shell
+$ shadow-cljs release app
+or
+$ npm run release
+```
 - build final *jar* into the `./target` folder
 ```shell
 $ clojure -T:build ci
 ```
-- Run that uberjar (show usage) :
+
+### Run
+- Run uberjar (show usage) :
 ```shell
+# display inline help
 $ java -jar target/clostack-X.X.X.jar --help
+# start server at port 8808
+$ java -jar target/clostack-X.X.X.jar --port 8808
 ```
