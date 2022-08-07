@@ -15,6 +15,10 @@
             (fn [db _]
               (:greet-from-server db)))
 
+(rf/reg-sub :route
+            (fn [db _]
+              (:route db)))
+
 ;; layer 3  ------------------------------------------------------
 ;; see http://day8.github.io/re-frame/subscriptions/#reg-sub
 

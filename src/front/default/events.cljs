@@ -65,3 +65,14 @@
   [username]
   (rf/dispatch [:say-hi username]))
 
+;; route -----------------------------------------------
+
+(defn nav-handler [db [_ route]]
+  (assoc db :route route))
+
+(rf/reg-event-db
+ :nav
+ nav-handler)
+
+(defn nav [route]
+  (rf/dispatch [:nav route]))

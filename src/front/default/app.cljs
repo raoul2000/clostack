@@ -4,16 +4,39 @@
             [default.views :as views]
             [default.events :as events]
             [default.subs :as subs]
-            [day8.re-frame.http-fx]))
+            [day8.re-frame.http-fx]
+            [re-frame.core :as rf]))
+
+(defn navbar-menu []
+  (let [current-route   @(rf/subscribe [:route])
+        route-id       (first current-route)]
+    [:div.navbar-menu.is-active
+     [:div.navbar-start
+      [:a.navbar-item {:on-click  #(events/nav [:home-route])
+                       :class     (when (= :home-route route-id) "is-active")} "Home"]
+      [:a.navbar-item {:on-click  #(events/nav [:widget-route])
+                       :class     (when (= :widget-route route-id) "is-active")} "Widget"]]]))
+
+
+(defn navbar []
+  [:nav.navbar.is-light {:role "navigation"
+                         :aria-label "main navigation"}
+   [:div.navbar-brand
+    [:a.navbar-item {:href "https://clojurescript.org/"}
+     [:img {:src    "/image/cljs-logo.png"
+            :width  "28"
+            :height "28"}]]]
+   [navbar-menu]])
 
 (defn app-page []
-  [:div#someId.someClass
-   [:span.nestedClass
-    "hello," (gstr/unescapeEntities "&nbsp;") "World !" ;; use HTML entities
-    ]
-   [views/say-hi-widget]
-   [:div
-    [:img.clojureLogo {:src "image/clojure-logo.png"}]]])
+  [:div
+   [navbar]
+     (let [current-route   @(rf/subscribe [:route])
+           route-id       (first current-route)]
+       (case route-id
+         :home-route   [views/home]
+         :widget-route [views/say-hi-widget]
+         [views/home]))])
 
 (defn render [element-id]
   (rdom/render [app-page] (js/document.getElementById element-id)))
