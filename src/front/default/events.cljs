@@ -5,10 +5,12 @@
 (rf/reg-event-db
  :initialize-state
  (fn [_ _]
-   {:route [:home-route]
+   {:route     [:home-route]   ;; default route is the home page
     :saying-hi false}))
 
-(defn dispatch-initialize-state []
+(defn >initialize-state 
+  "Synchronously dispatch the event to initialize the app state"
+  []
   (rf/dispatch-sync [:initialize-state]))
 
 ;; signals that the action to say hi to the server is in progress (true) or not (false)
@@ -44,7 +46,6 @@
 (rf/reg-fx
  :say-hi-to-console
  (fn [username]
-   ;;(rf/dispatch [:saying-hi true])
    (js/setTimeout  (fn []
                      (js/console.log (str "fx: saying hi to " username)))
                    1000)))
@@ -68,7 +69,7 @@
  :say-hi
  say-hi-handler)
 
-(defn say-hi-to
+(defn >say-hi-to
   "User with name *username* is saying 'Hi' to the server"
   [username]
   (rf/dispatch [:say-hi username]))
@@ -82,5 +83,5 @@
  :nav
  nav-handler)
 
-(defn nav [route]
+(defn >nav [route]
   (rf/dispatch [:nav route]))

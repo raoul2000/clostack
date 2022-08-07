@@ -11,6 +11,9 @@
              (fn [db _]
                (:saying-hi db)))
 
+(defn <saying-hi []
+  @(rf/subscribe [:saying-hi]))
+
 (rf/reg-sub :greet-response
             (fn [db _]
               (:greet-from-server db)))
@@ -27,3 +30,6 @@
             (fn [server-response]
               (when server-response 
                 (str "server says : \"" server-response "\""))))
+
+(defn <greet-from-server []
+  @(rf/subscribe [:greet-from-server]))

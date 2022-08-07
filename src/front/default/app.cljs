@@ -2,7 +2,7 @@
   (:require [reagent.dom :as rdom]
             [goog.string :as gstr]
             [default.views :as views]
-            [default.events :as events]
+            [default.events :refer [>nav >initialize-state]]
             [default.subs :as subs]
             [day8.re-frame.http-fx]
             [re-frame.core :as rf]))
@@ -12,14 +12,14 @@
         route-id       (first current-route)]
     [:div.navbar-menu.is-active
      [:div.navbar-start
-      [:a.navbar-item {:on-click  #(events/nav [:home-route])
+      [:a.navbar-item {:on-click  #(>nav [:home-route])
                        :class     (when (= :home-route route-id) "is-active")} "Home"]
-      [:a.navbar-item {:on-click  #(events/nav [:widget-route])
+      [:a.navbar-item {:on-click  #(>nav [:widget-route])
                        :class     (when (= :widget-route route-id) "is-active")} "Widget"]]]))
 
 
 (defn navbar []
-  [:nav.navbar.is-light {:role "navigation"
+  [:nav.navbar.is-light {:role       "navigation"
                          :aria-label "main navigation"}
    [:div.navbar-brand
     [:a.navbar-item {:href "https://clojurescript.org/"}
@@ -39,6 +39,6 @@
          [views/home]))])
 
 (defn render [element-id]
-  (events/dispatch-initialize-state)
+  (>initialize-state)
   (rdom/render [app-page] (js/document.getElementById element-id)))
 

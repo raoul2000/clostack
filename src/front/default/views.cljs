@@ -1,8 +1,8 @@
 (ns default.views
-  (:require [re-frame.core :as rf]
-            [reagent.core :as r]
+  (:require [reagent.core :as r]
             [clojure.string :as s]
-            [default.events :refer [say-hi-to]]))
+            [default.events :refer [>say-hi-to]]
+            [default.subs :refer [<greet-from-server <saying-hi]]))
 
 (defn say-hi-widget []
   (let [username        (r/atom "")
@@ -24,10 +24,10 @@
                            :type        :text
                            :on-change   update-username}]]
            [:div.panel-block
-            [:p @(rf/subscribe [:greet-from-server])]] ;; server response
+            [:p (<greet-from-server)]] ;; server response
            [:div.panel-block
-            [:button.button.is-fullwidth.is-link {:class    [(when @(rf/subscribe [:saying-hi]) "is-loading")]
-                                                  :on-click #(say-hi-to @username)
+            [:button.button.is-fullwidth.is-link {:class    [(when (<saying-hi) "is-loading")]
+                                                  :on-click #(>say-hi-to @username)
                                                   :disabled empty-username?} "Say Hi"]]]]]))))
 
 (defn home []
@@ -63,5 +63,7 @@
      [:div.column.is-3
       [:div.content
        [:h1 "Ready To Build"]
-       [:p "A complete set of tooling ready to use, with test and examples. Build the front then build the complete app with simple commands."]]]]]])
+       [:p "A complete set of tooling ready to use, with test and examples. Build the front then build the"
+           " complete app with simple commands."]]]]]])
+
 
