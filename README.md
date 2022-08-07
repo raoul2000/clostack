@@ -111,7 +111,7 @@ $ clojure -T:build ci
 ```
 
 ### Run
-- Run uberjar (show usage) :
+- Run uberjar:
 ```shell
 # display inline help
 $ java -jar target/clostack-X.X.X.jar --help
