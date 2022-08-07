@@ -2,6 +2,15 @@
   (:require [re-frame.core :as rf]
             [ajax.core :as ajax]))
 
+(rf/reg-event-db
+ :initialize-state
+ (fn [_ _]
+   {:route [:home-route]
+    :saying-hi false}))
+
+(defn dispatch-initialize-state []
+  (rf/dispatch-sync [:initialize-state]))
+
 ;; signals that the action to say hi to the server is in progress (true) or not (false)
 (defn saying-hi-handler [db [_ in-progress]]
   (assoc db :saying-hi in-progress))
@@ -15,7 +24,7 @@
   {:db (-> (:db cofx)
            (assoc :said-hi-success result)
            (assoc :greet-from-server (:reply result)))
-   :fx (conj (:fx cofx)  [:dispatch-later {:ms 1000 
+   :fx (conj (:fx cofx)  [:dispatch-later {:ms 1000
                                            :dispatch [:saying-hi false]}])})
 
 (rf/reg-event-fx
@@ -24,8 +33,8 @@
 
 ;; failed on saying hi to the server
 (defn said-hi-failure-handler [cofx [_ result]]
-  {:db (assoc (:db cofx)  :said-hi-error result)
-   :fx (conj (:fx cofx) [:dispatch [:saying-hi false]])})
+  {:db (assoc (:db cofx) :said-hi-error result)
+   :fx (conj  (:fx cofx) [:dispatch [:saying-hi false]])})
 
 (rf/reg-event-fx
  :said-hi-failure
@@ -58,7 +67,6 @@
 (rf/reg-event-fx
  :say-hi
  say-hi-handler)
-
 
 (defn say-hi-to
   "User with name *username* is saying 'Hi' to the server"

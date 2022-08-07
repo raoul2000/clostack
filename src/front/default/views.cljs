@@ -5,10 +5,10 @@
             [default.events :refer [say-hi-to]]))
 
 (defn say-hi-widget []
-  (let [username (r/atom "")
+  (let [username        (r/atom "")
         update-username #(reset! username (-> % .-target .-value))]
     (fn []
-      (let [username-val @username
+      (let [username-val    @username
             empty-username? (zero? (count (s/trim username-val)))]
         [:div.section
          [:div.container
@@ -26,10 +26,9 @@
            [:div.panel-block
             [:p @(rf/subscribe [:greet-from-server])]] ;; server response
            [:div.panel-block
-            [:button.button.is-fullwidth {:class    ["is-link"
-                                                     (when @(rf/subscribe [:saying-hi]) "is-loading")]
-                                          :on-click #(say-hi-to @username)
-                                          :disabled empty-username?}  "Say Hi"]]]]]))))
+            [:button.button.is-fullwidth.is-link {:class    [(when @(rf/subscribe [:saying-hi]) "is-loading")]
+                                                  :on-click #(say-hi-to @username)
+                                                  :disabled empty-username?} "Say Hi"]]]]]))))
 
 (defn home []
   [:div
@@ -56,8 +55,10 @@
         "  and "
         [:a {:href "http://pedestal.io/"
              :target "pedestal"} "Pedestal"]
-        ", two powerful frameworks implementing the same dev pattern."
-        ]]]
+        ", two powerful frameworks implementing the same "
+        [:a {:href "https://en.wikipedia.org/wiki/Interceptor_pattern"
+             :target "interceptor"} "Interceptor"]
+        " pattern."]]]
 
      [:div.column.is-3
       [:div.content

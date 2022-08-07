@@ -39,5 +39,6 @@
          [views/home]))])
 
 (defn render [element-id]
+  (events/dispatch-initialize-state)
   (rdom/render [app-page] (js/document.getElementById element-id)))
 
