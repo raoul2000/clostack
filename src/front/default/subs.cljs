@@ -22,6 +22,13 @@
             (fn [db _]
               (:route db)))
 
+(rf/reg-sub :show-modal-demo
+            (fn [db _]
+              (:show-modal-demo db)))
+
+(defn <show-modal-demo []
+  @(rf/subscribe [:show-modal-demo]))
+
 ;; layer 3  ------------------------------------------------------
 ;; see http://day8.github.io/re-frame/subscriptions/#reg-sub
 

@@ -7,6 +7,8 @@
             [day8.re-frame.http-fx]
             [re-frame.core :as rf]))
 
+
+
 (defn navbar-menu []
   (let [current-route   @(rf/subscribe [:route])
         route-id       (first current-route)]
@@ -35,8 +37,9 @@
            route-id       (first current-route)]
        (case route-id
          :home-route   [views/home]
-         :widget-route [views/say-hi-widget]
-         [views/home]))])
+         :widget-route [views/widget]
+         [views/home]))
+   ])
 
 (defn render [element-id]
   (>initialize-state)

@@ -1,8 +1,59 @@
 (ns default.views
   (:require [reagent.core :as r]
             [clojure.string :as s]
-            [default.events :refer [>say-hi-to]]
-            [default.subs :refer [<greet-from-server <saying-hi]]))
+            [default.events :refer [>say-hi-to >show-modal-demo >hide-modal-demo]]
+            [default.subs :refer [<greet-from-server <saying-hi <show-modal-demo]]))
+
+(defn modal [show on-cancel-fn on-submit-fn]
+  (let [form-data (r/atom {:name    ""
+                           :email   ""
+                           :country ""})]
+    (fn []
+      [:div.modal {:class (when show "is-active")}
+       [:div.modal-background {:on-click #(js/console.log "click modal")}]
+       [:div.modal-content
+        [:article.message
+         [:div.message-header "Contact"
+          [:button.delete {:aria-label "close"
+                           :on-click on-cancel-fn}]]
+         [:div.message-body
+          [:div.field
+           [:label.label "Name"]
+           [:div.control
+            [:input.input {:type        "text"
+                           :placeholder "your name"
+                           :value       (:name @form-data)
+                           :on-change   (fn [e]
+                                          (swap! form-data :name (-> e .-target .-value)))}]
+            [:p.help "this is the name you will use to login"]]]
+          [:div.field
+           [:label.label "Email"]
+           [:div.control
+            [:input.input {:type "text"
+                           :placeholder "e.g. bob@gmail.com"}]
+            [:p.help "we may send you some commercial email and plenty of spam"]]]
+          [:div.field
+           [:label.label "Country"]
+           [:div.control
+            [:div.select
+             [:select
+              [:option "France"]
+              [:option "Spain"]
+              [:option "Other"]]]]]
+          [:div.field.is-grouped
+           [:div.control
+            [:button.button.is-link {:on-click #(on-submit-fn @form-data)} "Submit"]]
+           [:div.control
+            [:button.button.is-link.is-light {:on-click on-cancel-fn} "Cancel"]]]]]]])))
+
+(defn modal-demo-widget []
+  (let [show-modal (<show-modal-demo)]
+    [:div.panel.is-link
+     (modal show-modal #(>hide-modal-demo) #(;;(js/console.log %) 
+                                             (>hide-modal-demo)))
+     [:div.panel-heading "Modal Demo"]
+     [:div.panel-block
+      [:button.button {:on-click #(>show-modal-demo)} "Open Modal"]]]))
 
 (defn say-hi-widget []
   (let [username        (r/atom "")
@@ -10,28 +61,31 @@
     (fn []
       (let [username-val    @username
             empty-username? (zero? (count (s/trim username-val)))]
-        [:div.section
-         [:div.container
-          [:div.panel.is-link
-           [:div.panel-heading "Please Behave !"]
-           [:div.panel-block
-            [:div.content
-             [:p "Being polite is important and here is the oportunity to salute the server."]
-             [:p "The server already knows 'bob' and 'max', but if you're not one fo them, you'll receive greetings too."]]]
-           [:div.panel-block
-            [:input.input {:id          "say-hi"
-                           :placeholder "what's your name ?"
-                           :type        :text
-                           :on-change   update-username}]]
-           [:div.panel-block
-            [:p (<greet-from-server)]] ;; server response
-           [:div.panel-block
-            [:button.button.is-fullwidth.is-link {:class    [(when (<saying-hi) "is-loading")]
-                                                  :on-click #(>say-hi-to @username)
-                                                  :disabled empty-username?} "Say Hi"]]]]]))))
+        [:div.panel.is-link
+         [:div.panel-heading "Please Behave !"]
+         [:div.panel-block
+          [:div.content
+           [:p "Being polite is important and here is the oportunity to salute the server."]
+           [:p "The server already knows 'bob' and 'max', but if you're not one fo them, you'll receive greetings too."]]]
+         [:div.panel-block
+          [:input.input {:id          "say-hi"
+                         :placeholder "what's your name ?"
+                         :type        :text
+                         :on-change   update-username}]]
+         [:div.panel-block
+          [:p (<greet-from-server)]] ;; server response
+         [:div.panel-block
+          [:button.button.is-fullwidth.is-link {:class    [(when (<saying-hi) "is-loading")]
+                                                :on-click #(>say-hi-to @username)
+                                                :disabled empty-username?} "Say Hi"]]]))))
+
+(defn widget []
+  [:div.section
+   [:div.container [say-hi-widget] [modal-demo-widget]]])
 
 (defn home []
   [:div
+   [modal]
    [:section.hero.is-medium.is-link
     [:div.hero-body
      [:p.title "Clostack"]
@@ -64,6 +118,7 @@
       [:div.content
        [:h1 "Ready To Build"]
        [:p "A complete set of tooling ready to use, with test and examples. Build the front then build the"
-           " complete app with simple commands."]]]]]])
+        " complete app with simple commands."]]]]]])
+
 
 

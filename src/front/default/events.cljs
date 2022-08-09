@@ -5,8 +5,9 @@
 (rf/reg-event-db
  :initialize-state
  (fn [_ _]
-   {:route     [:home-route]   ;; default route is the home page
-    :saying-hi false}))
+   {:route           [:home-route]   ;; default route is the home page
+    :saying-hi       false
+    :show-modal-demo false}))
 
 (defn >initialize-state 
   "Synchronously dispatch the event to initialize the app state"
@@ -85,3 +86,18 @@
 
 (defn >nav [route]
   (rf/dispatch [:nav route]))
+
+;; modal demo ---------------------------------------------
+
+(defn show-modal-demo-handler [db [_ show?]]
+  (assoc db :show-modal-demo show?))
+
+(rf/reg-event-db
+ :show-modal-demo
+ show-modal-demo-handler)
+
+(defn >show-modal-demo []
+  (rf/dispatch [:show-modal-demo true] ))
+
+(defn >hide-modal-demo []
+  (rf/dispatch [:show-modal-demo false]))
