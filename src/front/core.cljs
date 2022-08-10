@@ -1,5 +1,6 @@
 (ns core
   (:require [utils :refer [add-one]]
+            [re-frame.core :as rf]
             [default.app :as  default-app]))
 
 ;; function 'add-one' is defined as a shared function
@@ -14,6 +15,7 @@
   (js/console.log "stop"))
 
 (defn ^:dev/after-load start []
+  (rf/clear-subscription-cache!)
   (js/console.log "start"))
 
 (defn ^:dev/before-load-async async-stop [done]
