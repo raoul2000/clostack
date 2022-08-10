@@ -6,6 +6,9 @@
             [goog.string :as gstring]
             [goog.string.format]))
 
+
+;; widgets -----------------------------------------------------------------------------------------
+
 (defn modal [{:keys [username email country on-submit on-cancel]}]
   (let [form-data (r/atom {:username  username
                            :email     email
@@ -46,8 +49,11 @@
                :on-change (fn [e]
                             (swap! form-data assoc :country (-> e .-target .-value)))}
               [:option "Spain"]
-              [:option "Other"]
-              [:option "France"]]]]]
+              [:option "England"]
+              [:option "Portugal"]
+              [:option "Argentina"]
+              [:option "France"]
+              [:option "Other"]]]]]
           [:div.field.is-grouped
            [:div.control
             [:button.button.is-link {:on-click #(on-submit @form-data)} "Submit"]]
@@ -75,11 +81,12 @@
                   :on-cancel  #(>hide-modal-demo)}])
        [:div.panel-heading "Modal Demo"]
        [:div.panel-block
-        (if-let  [msg @message]
-          [:p msg]
-          [:p "nothing to say ... yet"])]
+        [:div.content
+         [:p "Open the modal window and fill the form with no fear ..."]
+         (when-let  [msg @message]
+           [:p msg])]]
        [:div.panel-block
-        [:button.button {:on-click #(>show-modal-demo)} "Open Modal"]]])))
+        [:button.button.is-fullwidth.is-link {:on-click #(>show-modal-demo)} "Open Modal"]]])))
 
 
 (defn say-hi-widget []
@@ -105,6 +112,8 @@
           [:button.button.is-fullwidth.is-link {:class    [(when (<saying-hi) "is-loading")]
                                                 :on-click #(>say-hi-to @username)
                                                 :disabled empty-username?} "Say Hi"]]]))))
+
+;; pages -----------------------------------------------------------------------------------------
 
 (defn widget []
   [:div.section
