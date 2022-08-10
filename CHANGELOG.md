@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning].
   - add dependency to [re-frame-10x](https://github.com/day8/re-frame-10x)
   - add dependency to [cljs-devtools](https://github.com/binaryage/cljs-devtools)
   - add dependency to [Bulma](https://bulma.io) (pure CSS Framework)
+  - redesign pages: 
+    - home: the home page for presentation
+    - widgets: demostrate various feature : ajax, modal
 
 ## [0.0.2]
 - ready to use dev environment and tooling (see [README](README.md) for details)
