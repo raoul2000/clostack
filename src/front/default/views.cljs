@@ -2,12 +2,14 @@
   (:require [reagent.core :as r]
             [clojure.string :as s]
             [default.events :refer [>say-hi-to >show-modal-demo >hide-modal-demo]]
-            [default.subs :refer [<greet-from-server <saying-hi <show-modal-demo]]))
+            [default.subs :refer [<greet-from-server <saying-hi <show-modal-demo]]
+            [goog.string :as gstring]
+            [goog.string.format]))
 
 (defn modal [{:keys [username email country on-submit on-cancel]}]
-  (let [form-data (r/atom {:name    username
-                           :email   email
-                           :country country})]
+  (let [form-data (r/atom {:username  username
+                           :email     email
+                           :country   country})]
     (fn []
       [:div.modal.is-active
        [:div.modal-background {:on-click #(js/console.log "click modal")}]
@@ -22,9 +24,9 @@
            [:div.control
             [:input.input {:type        "text"
                            :placeholder "your name"
-                           :value       (:name @form-data)
+                           :value       (:username @form-data)
                            :on-change   (fn [e]
-                                          (swap! form-data assoc :name (-> e .-target .-value)))}]
+                                          (swap! form-data assoc :username (-> e .-target .-value)))}]
             [:p.help "this is the name you will use to login"]]]
           [:div.field
            [:label.label "Email"]
@@ -52,6 +54,11 @@
            [:div.control
             [:button.button.is-link.is-light {:on-click on-cancel} "Cancel"]]]]]]])))
 
+(defn make-message [form-data]
+  (gstring/format "hello %s ! I will write you an email at %s when I'll come to visit you in %s"
+                  (:username form-data)
+                  (:email form-data)
+                  (:country form-data)))
 
 (defn modal-demo-widget []
   (let [message (r/atom nil)]
@@ -63,7 +70,7 @@
                   :country    "France"
                   :on-submit  #(do
                                  (js/console.log %)
-                                 (reset! message (:name %))
+                                 (reset! message (make-message %))
                                  (>hide-modal-demo))
                   :on-cancel  #(>hide-modal-demo)}])
        [:div.panel-heading "Modal Demo"]
@@ -73,6 +80,7 @@
           [:p "nothing to say ... yet"])]
        [:div.panel-block
         [:button.button {:on-click #(>show-modal-demo)} "Open Modal"]]])))
+
 
 (defn say-hi-widget []
   (let [username        (r/atom "")
@@ -100,7 +108,10 @@
 
 (defn widget []
   [:div.section
-   [:div.container [say-hi-widget] [modal-demo-widget]]])
+   [:div.columns
+    [:div.column.is-3 [say-hi-widget]]
+    [:div.column.is-3 [modal-demo-widget]]]])
+
 
 (defn home []
   [:div
