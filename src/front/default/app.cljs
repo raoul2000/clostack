@@ -42,6 +42,7 @@
    ])
 
 (defn render [element-id]
+  (js/console.log "render")
   (>initialize-state)
   (rdom/render [app-page] (js/document.getElementById element-id)))
 

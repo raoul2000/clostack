@@ -4,18 +4,18 @@
             [default.events :refer [>say-hi-to >show-modal-demo >hide-modal-demo]]
             [default.subs :refer [<greet-from-server <saying-hi <show-modal-demo]]))
 
-(defn modal [show on-cancel-fn on-submit-fn]
-  (let [form-data (r/atom {:name    ""
-                           :email   ""
-                           :country ""})]
+(defn modal [{:keys [username email country on-submit on-cancel]}]
+  (let [form-data (r/atom {:name    username
+                           :email   email
+                           :country country})]
     (fn []
-      [:div.modal {:class (when show "is-active")}
+      [:div.modal.is-active
        [:div.modal-background {:on-click #(js/console.log "click modal")}]
        [:div.modal-content
         [:article.message
          [:div.message-header "Contact"
           [:button.delete {:aria-label "close"
-                           :on-click on-cancel-fn}]]
+                           :on-click on-cancel}]]
          [:div.message-body
           [:div.field
            [:label.label "Name"]
@@ -24,36 +24,55 @@
                            :placeholder "your name"
                            :value       (:name @form-data)
                            :on-change   (fn [e]
-                                          (swap! form-data :name (-> e .-target .-value)))}]
+                                          (swap! form-data assoc :name (-> e .-target .-value)))}]
             [:p.help "this is the name you will use to login"]]]
           [:div.field
            [:label.label "Email"]
            [:div.control
             [:input.input {:type "text"
-                           :placeholder "e.g. bob@gmail.com"}]
-            [:p.help "we may send you some commercial email and plenty of spam"]]]
+                           :value       (:email @form-data)
+                           :placeholder "e.g. bob@gmail.com"
+                           :on-change   (fn [e]
+                                          (swap! form-data assoc :email (-> e .-target .-value)))}]
+            [:p.help "we may send you some commercial email and for sure plenty of spam"]]]
           [:div.field
            [:label.label "Country"]
            [:div.control
             [:div.select
              [:select
-              [:option "France"]
+              {:value     (:country @form-data)
+               :on-change (fn [e]
+                            (swap! form-data assoc :country (-> e .-target .-value)))}
               [:option "Spain"]
-              [:option "Other"]]]]]
+              [:option "Other"]
+              [:option "France"]]]]]
           [:div.field.is-grouped
            [:div.control
-            [:button.button.is-link {:on-click #(on-submit-fn @form-data)} "Submit"]]
+            [:button.button.is-link {:on-click #(on-submit @form-data)} "Submit"]]
            [:div.control
-            [:button.button.is-link.is-light {:on-click on-cancel-fn} "Cancel"]]]]]]])))
+            [:button.button.is-link.is-light {:on-click on-cancel} "Cancel"]]]]]]])))
+
 
 (defn modal-demo-widget []
-  (let [show-modal (<show-modal-demo)]
-    [:div.panel.is-link
-     (modal show-modal #(>hide-modal-demo) #(;;(js/console.log %) 
-                                             (>hide-modal-demo)))
-     [:div.panel-heading "Modal Demo"]
-     [:div.panel-block
-      [:button.button {:on-click #(>show-modal-demo)} "Open Modal"]]]))
+  (let [message (r/atom nil)]
+    (fn []
+      [:div.panel.is-link
+       (when (<show-modal-demo)
+         [modal  {:username   "bob"
+                  :email      "bob@email.com"
+                  :country    "France"
+                  :on-submit  #(do
+                                 (js/console.log %)
+                                 (reset! message (:name %))
+                                 (>hide-modal-demo))
+                  :on-cancel  #(>hide-modal-demo)}])
+       [:div.panel-heading "Modal Demo"]
+       [:div.panel-block
+        (if-let  [msg @message]
+          [:p msg]
+          [:p "nothing to say ... yet"])]
+       [:div.panel-block
+        [:button.button {:on-click #(>show-modal-demo)} "Open Modal"]]])))
 
 (defn say-hi-widget []
   (let [username        (r/atom "")
@@ -85,7 +104,6 @@
 
 (defn home []
   [:div
-   [modal]
    [:section.hero.is-medium.is-link
     [:div.hero-body
      [:p.title "Clostack"]
