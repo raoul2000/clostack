@@ -113,14 +113,39 @@
                                                 :on-click #(>say-hi-to @username)
                                                 :disabled empty-username?} "Say Hi"]]]))))
 
+(defn notification [{:keys [on-close message close-delay-ms]}]
+  (when close-delay-ms
+    (js/setTimeout  on-close close-delay-ms))
+
+  [:div.notification.is-primary.is-light.bottom-right.animate__animated.animate__slideInRight
+   [:button.delete {:on-click on-close}]
+   message])
+
+(defn notification-widget []
+  (let [show-notif        (r/atom false)]
+    (fn []
+      [:div.panel.is-link
+       [:div.panel-heading "Notification"]
+       [:div.panel-block
+        [:div.content
+         [:p "Click on the button below to open a notification message"]
+         [:p [:b "WARNING : "] " this is not a complete notification feature, just a simple notification being displayed"]]]
+       (when @show-notif
+         [notification {:message        "This is a notification to inform you that something was successfully done. Good job ! "
+                        :on-close       #(reset! show-notif false)
+                        :close-delay-ms 5000}])
+       [:div.panel-block
+        [:button.button.is-fullwidth.is-link {:on-click #(reset! show-notif (not @show-notif))}
+         "Show Notif"]]])))
+
 ;; pages -----------------------------------------------------------------------------------------
 
 (defn widget []
   [:div.section
    [:div.columns
     [:div.column.is-3 [say-hi-widget]]
-    [:div.column.is-3 [modal-demo-widget]]]])
-
+    [:div.column.is-3 [modal-demo-widget]]
+    [:div.column.is-3 [notification-widget]]]])
 
 (defn home []
   [:div
