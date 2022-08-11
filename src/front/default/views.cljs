@@ -6,7 +6,6 @@
             [goog.string :as gstring]
             [goog.string.format]))
 
-
 ;; widgets -----------------------------------------------------------------------------------------
 
 (defn modal [{:keys [username email country on-submit on-cancel]}]
@@ -116,8 +115,8 @@
 (defn notification [{:keys [on-close message close-delay-ms]}]
   (when close-delay-ms
     (js/setTimeout  on-close close-delay-ms))
-
-  [:div.notification.is-primary.is-light.bottom-right.animate__animated.animate__slideInRight
+  [:div.notification.is-primary.is-light.bottom-right.animate__animated.animate__faster.animate__slideInRight
+   {:on-animation-end (js/console.log "anmiate end")}
    [:button.delete {:on-click on-close}]
    message])
 
