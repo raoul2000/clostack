@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
 
-## [unreleased]
+## [0.0.3]
 ### Added
 - Front:
   - add dependency to [Re-frame](https://day8.github.io/re-frame/)
@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning].
   - add dependency to [Bulma](https://bulma.io) (pure CSS Framework)
   - redesign pages: 
     - home: the home page for presentation
-    - widgets: demostrate various feature : ajax, modal
+    - widgets: demostrate various feature : ajax, modal, notification
 
 ## [0.0.2]
 - ready to use dev environment and tooling (see [README](README.md) for details)
