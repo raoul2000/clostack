@@ -7,16 +7,19 @@
 (defn some-func [i]
   (add-one i))
 
-(default-app/render "root")
+(defn run []
+  (default-app/render "root"))
+
 
 ;;  Lifecycle Hooks =================================
 
 (defn ^:dev/before-load stop []
-  (js/console.log "stop"))
+  (js/console.log "/before-load"))
 
 (defn ^:dev/after-load start []
+  (js/console.log "after-load")
   (rf/clear-subscription-cache!)
-  (js/console.log "start"))
+  (run))
 
 (defn ^:dev/before-load-async async-stop [done]
   (js/console.log "stop")
