@@ -13,7 +13,7 @@
                            :email     email
                            :country   country})]
     (fn []
-      [:div.modal.is-active
+      [:div.modal.is-active.animate__animated.animate__faster.animate__fadeIn
        [:div.modal-background {:on-click #(js/console.log "click modal")}]
        [:div.modal-content
         [:article.message
@@ -81,7 +81,7 @@
        [:div.panel-heading "Modal Demo"]
        [:div.panel-block
         [:div.content
-         [:p "Open the modal window and fill the form with no fear ..."]
+         [:p "Open the modal window and fill the form with no fear."]
          (when-let  [msg @message]
            [:p msg])]]
        [:div.panel-block
