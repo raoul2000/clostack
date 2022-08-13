@@ -29,13 +29,20 @@
 (defn <show-modal-demo []
   @(rf/subscribe [:show-modal-demo]))
 
+(rf/reg-sub :show-left-drawer
+            (fn [db _]
+              (:show-left-drawer db)))
+
+(defn <show-left-drawer []
+  @(rf/subscribe [:show-left-drawer]))
+
 ;; layer 3  ------------------------------------------------------
 ;; see http://day8.github.io/re-frame/subscriptions/#reg-sub
 
 (rf/reg-sub :greet-from-server
             :<- [:greet-response]
             (fn [server-response]
-              (when server-response 
+              (when server-response
                 (str "server says : \"" server-response "\""))))
 
 (defn <greet-from-server []

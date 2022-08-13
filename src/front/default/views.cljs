@@ -1,7 +1,7 @@
 (ns default.views
   (:require [reagent.core :as r]
             [clojure.string :as s]
-            [default.events :refer [>say-hi-to >show-modal-demo >hide-modal-demo]]
+            [default.events :refer [>say-hi-to >show-modal-demo >hide-modal-demo >show-left-drawer]]
             [default.subs :refer [<greet-from-server <saying-hi <show-modal-demo]]
             [goog.string :as gstring]
             [goog.string.format]))
@@ -137,6 +137,20 @@
         [:button.button.is-fullwidth.is-link {:on-click #(reset! show-notif (not @show-notif))}
          "Show Notif"]]])))
 
+
+(defn drawer-control []
+  [:div.panel.is-link
+   [:div.panel-heading "Drawer"]
+   [:div.panel-block
+    [:div.content
+     [:p "Click on the button below to open a notification message"]
+     [:p [:b "WARNING : "] " this is not a complete notification feature, just a simple notification being displayed"]]]
+   
+   [:div.panel-block
+    [:button.button.is-fullwidth.is-link {:on-click #(>show-left-drawer true)}
+     "Open"]]]
+  )
+
 ;; pages -----------------------------------------------------------------------------------------
 
 (defn widget []
@@ -144,7 +158,10 @@
    [:div.columns
     [:div.column.is-3 [say-hi-widget]]
     [:div.column.is-3 [modal-demo-widget]]
-    [:div.column.is-3 [notification-widget]]]])
+    [:div.column.is-3 [notification-widget]]
+    [:div.column.is-3 [drawer-control]]
+    
+    ]])
 
 (defn home []
   [:div

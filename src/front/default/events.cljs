@@ -5,11 +5,12 @@
 (rf/reg-event-db
  :initialize-state
  (fn [_ _]
-   {:route           [:home-route]   ;; default route is the home page
-    :saying-hi       false
-    :show-modal-demo false}))
+   {:route            [:home-route]   ;; default route is the home page
+    :saying-hi        false
+    :show-modal-demo  false
+    :show-left-drawer false}))
 
-(defn >initialize-state 
+(defn >initialize-state
   "Synchronously dispatch the event to initialize the app state"
   []
   (rf/dispatch-sync [:initialize-state]))
@@ -97,7 +98,19 @@
  show-modal-demo-handler)
 
 (defn >show-modal-demo []
-  (rf/dispatch [:show-modal-demo true] ))
+  (rf/dispatch [:show-modal-demo true]))
 
 (defn >hide-modal-demo []
   (rf/dispatch [:show-modal-demo false]))
+
+;; drawer -------------------------------------
+
+(defn show-left-drawer-handler [db [_ show?]]
+  (assoc db :show-left-drawer show?))
+
+(rf/reg-event-db
+ :show-left-drawer
+ show-left-drawer-handler)
+
+(defn >show-left-drawer [show]
+  (rf/dispatch [:show-left-drawer show]))

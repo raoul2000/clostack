@@ -2,12 +2,10 @@
   (:require [reagent.dom :as rdom]
             [goog.string :as gstr]
             [default.views :as views]
-            [default.events :refer [>nav >initialize-state]]
+            [default.events :refer [>nav >initialize-state >show-left-drawer]]
             [default.subs :as subs]
             [day8.re-frame.http-fx]
             [re-frame.core :as rf]))
-
-
 
 (defn navbar-menu []
   (let [current-route   @(rf/subscribe [:route])
@@ -19,7 +17,6 @@
       [:a.navbar-item {:on-click  #(>nav [:widget-route])
                        :class     (when (= :widget-route route-id) "is-active")} "Widget"]]]))
 
-
 (defn navbar []
   [:nav.navbar.is-light {:role       "navigation"
                          :aria-label "main navigation"}
@@ -30,16 +27,41 @@
             :height "28"}]]]
    [navbar-menu]])
 
+(defn left-drawer [& main]
+  (let [drawer-is-open  (subs/<show-left-drawer)
+        current-route   @(rf/subscribe [:route])
+        route-id        (first current-route)
+        ]
+    [:div
+     [:div#mySidenav.sidenav {:style {:width (if drawer-is-open "250px" "0")}}
+      [:aside.menu
+       [:div.is-clearfix
+        [:button.delete.is-pulled-right
+         {:on-click #(>show-left-drawer false)}]]
+       [:p.menu-label "General"]
+       [:ul.menu-list
+        [:li [:a {:on-click  #(>nav [:home-route])
+                  :class     (when (= :home-route route-id) "is-active")} "Home"]]
+        [:li [:a {:on-click  #(>nav [:widget-route])
+                  :class     (when (= :widget-route route-id) "is-active")} "Widget"]]
+        [:li [:a {:href "https://cljs.github.io/api/"
+                  :target "blank"} "ClojureScript API"]]
+        [:li [:a "Very long Menu item Title that does not fit menu width"]]
+        [:li [:a "Customer"]]
+        [:li [:a "Customer"]]]]]
+     [:div#main {:style {:marginLeft (if drawer-is-open "250px" "0")}}
+      main]]))
+
 (defn app-page []
   [:div
-   [navbar]
-     (let [current-route   @(rf/subscribe [:route])
-           route-id       (first current-route)]
-       (case route-id
-         :home-route   [views/home]
-         :widget-route [views/widget]
-         [views/home]))
-   ])
+   [left-drawer
+    [navbar]
+    (let [current-route  @(rf/subscribe [:route])
+          route-id       (first current-route)]
+      (case route-id
+        :home-route   [views/home]
+        :widget-route [views/widget]
+        [views/home]))]])
 
 (defn render [element-id]
   (js/console.log "render")
