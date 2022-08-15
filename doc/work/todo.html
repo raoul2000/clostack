@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+            rel="stylesheet"
+            href="../../resources/public/css/bulma.min.css"
+        />
+        <link
+            rel="stylesheet"
+            href="../../resources/public/css/bulmaswatch.min.css"
+        />
+        <link rel="stylesheet" href="../../resources/public/css/main.css" />
+        <link
+            rel="stylesheet"
+            href="../../resources/public/css/materialdesignicons.min.css"
+        />
+        <title>Todo Mockup</title>
+        <style>
+            .todo-list-container {
+                /*max-height: 250px;*/
+                overflow: auto;
+            }
+            .mark-done {
+                color: grey;
+                text-decoration: line-through;
+            }
+            .mark-done .mdi-check {
+                visibility: visible;
+            }
+            .mdi-check {
+                visibility: hidden;
+            }
+            .todo-action {
+                visibility: hidden;
+                margin-right: 0px;
+                margin-left: 0.75em;
+            }
+            .todo-action.todo-action-delete .mdi:hover {
+                color: red;
+            }
+            .todo-action.todo-action-edit .mdi:hover {
+                color: blue;
+            }
+            .panel-block:hover .todo-action {
+                visibility: visible;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="columns">
+                <div class="column">
+                    <nav class="panel">
+                        <p class="panel-heading">Todo</p>                        
+                        <div class="panel-block">
+                            <p class="control has-icons-left">
+                                <input
+                                    class="input"
+                                    type="text"
+                                    placeholder="filter"
+                                />
+                                <span class="icon is-left">
+                                    <i
+                                        class="mdi mdi-filter"
+                                        aria-hidden="true"
+                                    ></i>
+                                </span>
+                            </p>
+                        </div>
+                        <p class="panel-tabs">
+                            <a class="is-active">To do</a>
+                            <a>Done</a>
+                            <a>All</a>
+                        </p>
+                        <div class="todo-list-container">
+                            <a class="panel-block mark-done">
+                                <span class="panel-icon">
+                                    <i
+                                        class="mdi mdi-check"
+                                        aria-hidden="true"
+                                    ></i>
+                                </span>
+                                <span class="is-flex-grow-1">
+                                    Lorem ipsum, dolor sit amet conquuntur a
+                                    dignissimos autem ut! Auquas amet voluptatem
+                                    voluptatibus!
+                                </span>
+                                <div
+                                    class="is-flex is-justify-content-flex-end"
+                                >
+                                    <span
+                                        class="panel-icon todo-action todo-action-edit"
+                                    >
+                                        <i
+                                            class="mdi mdi-pencil"
+                                            aria-hidden="true"
+                                        ></i>
+                                    </span>
+                                    <span
+                                        class="panel-icon todo-action todo-action-delete"
+                                    >
+                                        <i
+                                            class="mdi mdi-delete-forever"
+                                            aria-hidden="true"
+                                        ></i>
+                                    </span>
+                                </div>
+                            </a>
+
+                            <a class="panel-block">
+                                <span class="panel-icon">
+                                    <i
+                                        class="mdi mdi-check"
+                                        aria-hidden="true"
+                                    ></i>
+                                </span>
+                                <span class="is-flex-grow-1">
+                                    Do something clever now
+                                </span>
+                                <div
+                                    class="is-flex is-justify-content-flex-end"
+                                >
+                                    <span
+                                        class="panel-icon todo-action todo-action-edit"
+                                    >
+                                        <i
+                                            class="mdi mdi-pencil"
+                                            aria-hidden="true"
+                                        ></i>
+                                    </span>
+                                    <span
+                                        class="panel-icon todo-action todo-action-delete"
+                                    >
+                                        <i
+                                            class="mdi mdi-delete-forever"
+                                            aria-hidden="true"
+                                        ></i>
+                                    </span>
+                                </div>
+                            </a>
+                            <a class="panel-block">
+                                <span class="panel-icon">
+                                    <i
+                                        class="mdi mdi-check"
+                                        aria-hidden="true"
+                                    ></i>
+                                </span>
+                                <span class="is-flex-grow-1">
+                                    Lorem ipsum dolor sit amet consectetur
+                                    adipisicing elit. Molestiae deleniti beatae,
+                                    corrupti quo expedita delectus esse
+                                    sapiente. Iure, iusto deserunt dolore
+                                    voluptatibus commodi, ex aut vitae
+                                    blanditiis, dolorem quisquam doloremque.
+                                </span>
+
+                                <div
+                                    class="is-flex is-justify-content-flex-end"
+                                >
+                                    <span
+                                        class="panel-icon todo-action todo-action-edit"
+                                    >
+                                        <i
+                                            class="mdi mdi-pencil"
+                                            aria-hidden="true"
+                                        ></i>
+                                    </span>
+                                    <span
+                                        class="panel-icon todo-action todo-action-delete"
+                                    >
+                                        <i
+                                            class="mdi mdi-delete-forever"
+                                            aria-hidden="true"
+                                        ></i>
+                                    </span>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="panel-block">
+                            <button
+                                class="button is-link is-outlined is-fullwidth is-shadowless"
+                            >
+                                New ...
+                            </button>
+                        </div>
+                    </nav>
+                </div>
+                <div class="column">Second column</div>
+                <div class="column">Third column</div>
+                <div class="column">Fourth column</div>
+            </div>
+        </div>
+    </body>
+</html>
