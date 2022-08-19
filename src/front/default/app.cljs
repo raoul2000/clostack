@@ -30,8 +30,7 @@
 (defn left-drawer [& main]
   (let [drawer-is-open  (subs/<show-left-drawer)
         current-route   @(rf/subscribe [:route])
-        route-id        (first current-route)
-        ]
+        route-id        (first current-route)]
     [:div
      [:div#mySidenav.sidenav {:style {:width (if drawer-is-open "250px" "0")}}
       [:aside.menu
@@ -41,14 +40,19 @@
        [:p.menu-label "General"]
        [:ul.menu-list
         [:li [:a {:on-click  #(>nav [:home-route])
-                  :class     (when (= :home-route route-id) "is-active")} "Home"]]
+                  :class     (when (= :home-route route-id) "is-active")}
+              [:span.icon [:i.mdi.mdi-home]] "Home"]]
         [:li [:a {:on-click  #(>nav [:widget-route])
-                  :class     (when (= :widget-route route-id) "is-active")} "Widget"]]
+                  :class     (when (= :widget-route route-id) "is-active")}
+              [:span.icon [:i.mdi.mdi-widgets-outline]]  "Widget"]]
         [:li [:a {:href "https://cljs.github.io/api/"
-                  :target "blank"} "ClojureScript API"]]
+                  :target "blank"}
+              [:span.icon [:i.mdi.mdi-script-text]] "ClojureScript API"]]
         [:li [:a "Very long Menu item Title that does not fit menu width"]]
-        [:li [:a "Customer"]]
-        [:li [:a "Customer"]]]]]
+        [:li [:a
+              [:span.icon [:i.mdi.mdi-alert-circle-outline]] "Customer"]]
+        [:li [:a
+              [:span.icon [:i.mdi.mdi-cog]] "Preferences"]]]]]
      [:div#main {:style {:marginLeft (if drawer-is-open "250px" "0")}}
       main]]))
 

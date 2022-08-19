@@ -2,7 +2,7 @@
   (:require [reagent.core :as r]
             [clojure.string :as s]
             [default.events :refer [>say-hi-to >show-modal-demo >hide-modal-demo >show-left-drawer]]
-            [default.subs :refer [<greet-from-server <saying-hi <show-modal-demo]]
+            [default.subs :refer [<greet-from-server <saying-hi <show-modal-demo <show-left-drawer]]
             [goog.string :as gstring]
             [goog.string.format]))
 
@@ -143,13 +143,12 @@
    [:div.panel-heading "Drawer"]
    [:div.panel-block
     [:div.content
-     [:p "Click on the button below to open a notification message"]
-     [:p [:b "WARNING : "] " this is not a complete notification feature, just a simple notification being displayed"]]]
-   
+     [:p "Click on the button below to open the" [:b " left menu"]]
+     [:p "the menu is currently " (if (<show-left-drawer) [:span.tag.is-success "opened"] [:span.tag.is-danger "closed"])]
+     ]]
    [:div.panel-block
     [:button.button.is-fullwidth.is-link {:on-click #(>show-left-drawer true)}
-     "Open"]]]
-  )
+     "Open"]]])
 
 ;; pages -----------------------------------------------------------------------------------------
 
@@ -159,9 +158,7 @@
     [:div.column.is-3 [say-hi-widget]]
     [:div.column.is-3 [modal-demo-widget]]
     [:div.column.is-3 [notification-widget]]
-    [:div.column.is-3 [drawer-control]]
-    
-    ]])
+    [:div.column.is-3 [drawer-control]]]])
 
 (defn home []
   [:div
