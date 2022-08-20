@@ -4,7 +4,8 @@
             [default.events :refer [>say-hi-to >show-modal-demo >hide-modal-demo >show-left-drawer]]
             [default.subs :refer [<greet-from-server <saying-hi <show-modal-demo <show-left-drawer]]
             [goog.string :as gstring]
-            [goog.string.format]))
+            [goog.string.format]
+            [default.todo.views :as todo]))
 
 ;; widgets -----------------------------------------------------------------------------------------
 
@@ -158,7 +159,9 @@
     [:div.column.is-3 [say-hi-widget]]
     [:div.column.is-3 [modal-demo-widget]]
     [:div.column.is-3 [notification-widget]]
-    [:div.column.is-3 [drawer-control]]]])
+    [:div.column.is-3 [drawer-control]]]
+   [:div.columns
+    [:div.column.is-4 [todo/render]]]])
 
 (defn home []
   [:div

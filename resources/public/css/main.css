@@ -50,3 +50,43 @@ html,body {
   .sidenav {padding-top: 15px;}
   .sidenav a {font-size: 18px;}
 } 
+
+/* ------------ Todo widget --------------*/
+
+.todo-list-container {
+  /*max-height: 250px;*/
+  overflow: auto;
+}
+.mark-done {
+  color: grey;
+  text-decoration: line-through;
+}
+.mark-done .mdi-check {
+  visibility: visible;
+}
+.mdi-check {
+  visibility: hidden;
+}
+.todo-action {
+  visibility: hidden;
+  margin-right: 0px;
+  margin-left: 0.75em;
+}
+.todo-action.todo-action-delete .mdi:hover,
+.todo-action.todo-action-cancel .mdi:hover 
+{
+  color: red;
+}
+.todo-action.todo-action-edit .mdi:hover {
+  color: blue;
+}
+.todo-action.todo-action-save .mdi:hover {
+  color: green;
+}
+.panel-block:hover .todo-action {
+  visibility: visible;
+}
+
+
+
+
