@@ -105,7 +105,13 @@
 
 ;; -----------------
 
-(defn save-edit-todo-item-handler [db _]
+(defn next-id [todo-list]
+  (let [numeric-ids (filter int? (keys todo-list))]
+    (if (empty? numeric-ids)
+      1
+      (inc (apply max numeric-ids)))))
+
+(defn save-edit-todo-item-handler [db [_ todo-item-text]]
   (let [edited-todo-item-id (get-in db [:todo-widget :editing-item-id])
         edited-todo-item    (get-in db [:todo-widget :editing-item])
         updated-db          (-> db
@@ -113,12 +119,12 @@
                                 (assoc-in  [:todo-widget :editing-item]    nil))]
     (update-in updated-db [:todo-widget :todo-list] (fn [old-todo-list]
                                                       (if (= "new" edited-todo-item-id)
-                                                        (let [new-id (inc (apply max (filter int? (keys old-todo-list))))]
+                                                        (let [new-id (next-id old-todo-list)]
                                                           (-> old-todo-list
                                                               (dissoc "new")
-                                                              (assoc new-id edited-todo-item)))
-
-                                                        (assoc old-todo-list edited-todo-item-id edited-todo-item))))))
+                                                              (assoc new-id {:text todo-item-text
+                                                                             :done false})))
+                                                        (update old-todo-list edited-todo-item-id assoc :text todo-item-text))))))
 
 (rf/reg-event-db
  :save-edit-todo-item
@@ -126,8 +132,8 @@
 
 (defn >save-edit-todo-item
   "User save todo item after edition"
-  []
-  (rf/dispatch [:save-edit-todo-item]))
+  [todo-item-text]
+  (rf/dispatch [:save-edit-todo-item todo-item-text]))
 
 ;; --------------------
 

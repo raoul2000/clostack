@@ -1,5 +1,6 @@
 (ns default.todo.views
-  (:require [default.todo.subs :refer [<selected-tab <quick-filter <todo-list
+  (:require [reagent.core :as r]
+            [default.todo.subs :refer [<selected-tab <quick-filter <todo-list
                                        <editing-item-id]]
             [default.todo.events :refer [>select-tab >quick-filter-update >add-todo-item
                                          >edit-todo-item >delete-todo-item >cancel-edit-todo-item
@@ -30,8 +31,9 @@
       "All"]]))
 
 (defn show-todo-item [id text]
+  (js/console.log id)
   [:<>
-   [:span.is-flex-grow-1 {:on-click #(>toggle-done id) }
+   [:span.is-flex-grow-1 {:on-click #(>toggle-done id)}
     text]
    [:div.is-flex.is-justify-content-flex-end
     [:span.panel-icon.todo-action.todo-action-edit
@@ -42,22 +44,26 @@
                                  :on-click #(>delete-todo-item id)}]]]])
 
 (defn edit-todo-item [text]
-  [:<>
-   [:span.is-flex-grow-1
-    [:input.input {:type        "text"
-                   :placeholder "what do you have to do ?"
-                   :value       text}]]
-   [:div.is-flex.is-justify-content-flex-end
-    [:span.panel-icon.todo-action.todo-action-save
-     [:i.mdi.mdi-check-circle-outline {:aria-hidden "true"
-                                       :on-click >save-edit-todo-item}]]
-    [:span.panel-icon.todo-action.todo-action-cancel
-     [:i.mdi.mdi-close-circle-outline {:aria-hidden "true"
-                                       :on-click >cancel-edit-todo-item}]]]])
+  (let [input-text        (r/atom text)
+        update-input-text #(reset! input-text (-> % .-target .-value))]
+    (fn []
+      [:<>
+       [:span.is-flex-grow-1
+        [:input.input {:type        "text"
+                       :placeholder "what do you have to do ?"
+                       :value       @input-text
+                       :on-change   update-input-text}]]
+       [:div.is-flex.is-justify-content-flex-end
+        [:span.panel-icon.todo-action.todo-action-save
+         [:i.mdi.mdi-check-circle-outline {:aria-hidden "true"
+                                           :on-click #(>save-edit-todo-item @input-text)}]]
+        [:span.panel-icon.todo-action.todo-action-cancel
+         [:i.mdi.mdi-close-circle-outline {:aria-hidden "true"
+                                           :on-click >cancel-edit-todo-item}]]]])))
 
 
 (defn render-todo-item [[id {:keys [text done]}]]
-  (js/console.log id)
+  ;;(js/console.log id)
   [:a.panel-block
    {:class (when done "mark-done")
     :key   id}
