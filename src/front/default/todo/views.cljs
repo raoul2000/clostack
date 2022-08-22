@@ -3,17 +3,7 @@
                                        <editing-item-id]]
             [default.todo.events :refer [>select-tab >quick-filter-update >add-todo-item
                                          >edit-todo-item >delete-todo-item >cancel-edit-todo-item
-                                         >save-edit-todo-item]]))
-
-(def todo-list {1 {:text  "do something"
-                   :done  false
-                   :edit  false}
-                2 {:text  "do something else"
-                   :done  true
-                   :edit  false}
-                3 {:text  "editing this item"
-                   :done  false
-                   :edit  true}})
+                                         >save-edit-todo-item >toggle-done]]))
 
 (defn quick-filter []
   [:div.panel-block
@@ -41,7 +31,8 @@
 
 (defn show-todo-item [id text]
   [:<>
-   [:span.is-flex-grow-1 text]
+   [:span.is-flex-grow-1 {:on-click #(>toggle-done id) }
+    text]
    [:div.is-flex.is-justify-content-flex-end
     [:span.panel-icon.todo-action.todo-action-edit
      [:i.mdi.mdi-pencil {:aria-hidden "true"

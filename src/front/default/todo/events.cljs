@@ -113,12 +113,11 @@
                                 (assoc-in  [:todo-widget :editing-item]    nil))]
     (update-in updated-db [:todo-widget :todo-list] (fn [old-todo-list]
                                                       (if (= "new" edited-todo-item-id)
-                                                        (let [new-id (inc (apply max (filter int? (keys old-todo-list) )))]
-                                                        (-> old-todo-list
-                                                            (dissoc "new")
-                                                            (assoc new-id edited-todo-item))  
-                                                          )
-                                                        
+                                                        (let [new-id (inc (apply max (filter int? (keys old-todo-list))))]
+                                                          (-> old-todo-list
+                                                              (dissoc "new")
+                                                              (assoc new-id edited-todo-item)))
+
                                                         (assoc old-todo-list edited-todo-item-id edited-todo-item))))))
 
 (rf/reg-event-db
@@ -129,3 +128,16 @@
   "User save todo item after edition"
   []
   (rf/dispatch [:save-edit-todo-item]))
+
+;; --------------------
+
+(defn toggle-done-handler [db [_ todo-item-id]]
+  (update-in db [:todo-widget :todo-list todo-item-id] (fn [old-todo-item]
+                                                         (update old-todo-item :done not))))
+
+(rf/reg-event-db
+ :toggle-done
+ toggle-done-handler)
+
+(defn >toggle-done [todo-item-id]
+  (rf/dispatch [:toggle-done todo-item-id]))
