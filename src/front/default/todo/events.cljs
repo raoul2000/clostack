@@ -1,5 +1,8 @@
 (ns default.todo.events
-  (:require [re-frame.core :as rf]))
+  (:require [re-frame.core :as rf]
+            [clojure.string :refer [trim]]))
+
+(def temp-todo-item-id "new")
 
 ;; ---------------
 
@@ -35,13 +38,16 @@
 
 (defn add-todo-item-handler [db _]
   ;; by convention, a new todo item has id = "new" until user saves it
-  (let [new-item-id "new"
+  (let [new-item-id temp-todo-item-id
         new-item  {:text ""
                    :done false}]
     (-> db
         (update-in [:todo-widget :todo-list] merge {new-item-id new-item})
         (assoc-in  [:todo-widget :editing-item-id] new-item-id)
-        (assoc-in  [:todo-widget :editing-item]    new-item))))
+        (assoc-in  [:todo-widget :quick-filter] "")
+        (assoc-in  [:todo-widget :selected-tab] :tab-all)
+        
+        )))
 
 (rf/reg-event-db
  :add-todo-item
@@ -55,10 +61,7 @@
 ;; ---------------
 
 (defn edit-todo-item-handler [db [_ todo-item-id]]
-  (let [editing-item (get-in db [:todo-widget :todo-list todo-item-id])]
-    (-> db
-        (assoc-in [:todo-widget :editing-item-id] todo-item-id)
-        (assoc-in [:todo-widget :editing-item]    editing-item))))
+  (assoc-in db [:todo-widget :editing-item-id] todo-item-id))
 
 (rf/reg-event-db
  :edit-todo-item
@@ -87,12 +90,10 @@
 
 (defn cancel-edit-todo-item-handler [db _]
   (let [edited-todo-item-id (get-in db [:todo-widget :editing-item-id])
-        updated-db          (-> db
-                                (assoc-in  [:todo-widget :editing-item-id] nil)
-                                (assoc-in  [:todo-widget :editing-item]    nil))]
+        updated-db          (assoc-in db  [:todo-widget :editing-item-id] nil)]
     (cond-> updated-db
       ;; canceling edition of a new todo item is like deleting from the todo list
-      (= "new" edited-todo-item-id) (update-in [:todo-widget :todo-list] dissoc edited-todo-item-id))))
+      (= temp-todo-item-id edited-todo-item-id) (update-in [:todo-widget :todo-list] dissoc edited-todo-item-id))))
 
 (rf/reg-event-db
  :cancel-edit-todo-item
@@ -111,20 +112,18 @@
       1
       (inc (apply max numeric-ids)))))
 
+(defn  commit-edit-todo-item [todo-list todo-item-id todo-item-text]
+  (if (= temp-todo-item-id todo-item-id) 
+      (-> todo-list
+          (assoc (next-id todo-list) (-> (get todo-list todo-item-id)
+                                         (assoc :text todo-item-text)))
+          (dissoc temp-todo-item-id))
+    (update todo-list todo-item-id assoc :text todo-item-text)))
+
 (defn save-edit-todo-item-handler [db [_ todo-item-text]]
-  (let [edited-todo-item-id (get-in db [:todo-widget :editing-item-id])
-        edited-todo-item    (get-in db [:todo-widget :editing-item])
-        updated-db          (-> db
-                                (assoc-in  [:todo-widget :editing-item-id] nil)
-                                (assoc-in  [:todo-widget :editing-item]    nil))]
-    (update-in updated-db [:todo-widget :todo-list] (fn [old-todo-list]
-                                                      (if (= "new" edited-todo-item-id)
-                                                        (let [new-id (next-id old-todo-list)]
-                                                          (-> old-todo-list
-                                                              (dissoc "new")
-                                                              (assoc new-id {:text todo-item-text
-                                                                             :done false})))
-                                                        (update old-todo-list edited-todo-item-id assoc :text todo-item-text))))))
+  (let [edited-todo-item-id (get-in db   [:todo-widget :editing-item-id])
+        updated-db          (assoc-in db [:todo-widget :editing-item-id] nil)]
+    (update-in updated-db [:todo-widget :todo-list] commit-edit-todo-item edited-todo-item-id todo-item-text)))
 
 (rf/reg-event-db
  :save-edit-todo-item
@@ -133,7 +132,9 @@
 (defn >save-edit-todo-item
   "User save todo item after edition"
   [todo-item-text]
-  (rf/dispatch [:save-edit-todo-item todo-item-text]))
+  (let [normalized-text (trim todo-item-text)]
+    (when-not (empty?   normalized-text)
+      (rf/dispatch [:save-edit-todo-item normalized-text]))))
 
 ;; --------------------
 
