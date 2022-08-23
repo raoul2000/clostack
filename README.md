@@ -38,6 +38,8 @@ Managed by [Shadow-cljs](https://shadow-cljs.github.io/docs/UsersGuide.html) (se
   - [re-frame-10x](https://github.com/day8/re-frame-10x): instrument, and then inspect, the inner workings of a running re-frame application
   - [cljs-devtools](https://github.com/binaryage/cljs-devtools): adds enhancements into Chrome DevTools for ClojureScript developers
 - [Bulma](https://bulma.io) (pure CSS Framework)
+  - [Material Design theme](https://jenil.github.io/bulmaswatch/materia)
+  - [Material Design Icons](https://materialdesignicons.com/)
 
 ## Backend
 
@@ -64,7 +66,7 @@ $ npx shadow-cljs watch app
 or
 $ npm run watch-app
 ```
-- when `Build completed` and then:
+- after `Build completed`:
   - go to http://localhost:9630 for the REPL
   - go to http://localhost:8000 for the main
 - **tests** are configured to run in browser. To watch and run test
@@ -73,7 +75,7 @@ $ npx shadow-cljs watch test
 or
 $ npm run watch-test
 ```
-- when started, test page is at http://localhost:8021/ 
+- when started, test page is at http://localhost:8021/ (auto-releoad)
 
 ### Work on the Backend
 

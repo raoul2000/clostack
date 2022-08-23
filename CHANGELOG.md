@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning].
   - add dependency to [Bulma](https://bulma.io) (pure CSS Framework)
   - redesign pages: 
     - home: the home page for presentation
-    - widgets: demostrate various feature : ajax, modal, notification
+    - widgets: demostrate various feature : ajax, modal, notification, drawer, todo list
 
 ## [0.0.2]
 - ready to use dev environment and tooling (see [README](README.md) for details)
