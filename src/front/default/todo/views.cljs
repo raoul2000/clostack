@@ -44,13 +44,14 @@
                                  :title       "delete"
                                  :on-click    #(>delete-todo-item id)}]]]])
 
-(defn edit-todo-item [text]
+(defn edit-todo-item [id text]
   (let [input-text        (r/atom text)
         update-input-text #(reset! input-text (-> % .-target .-value))]
     (fn []
       [:<>
        [:span.is-flex-grow-1
-        [:input.input {:type         "text"
+        [:input.input {:id            (str "input-" id)
+                       :type         "text"
                        :placeholder  "what do you have to do ?"
                        :value        @input-text
                        :on-change    update-input-text
@@ -74,7 +75,7 @@
     {:on-click #(>toggle-done id)}
     [:i.mdi.mdi-check {:aria-hidden "true"}]]
    (if (= id (<editing-item-id))
-     [edit-todo-item text]
+     [edit-todo-item id text]
      [show-todo-item id text])])
 
 (defn action-bar []

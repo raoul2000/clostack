@@ -36,20 +36,19 @@
 
 ;; ---------------
 
-(defn add-todo-item-handler [db _]
+(defn add-todo-item-handler [cofx _]
   ;; by convention, a new todo item has id = "new" until user saves it
   (let [new-item-id temp-todo-item-id
         new-item  {:text ""
                    :done false}]
-    (-> db
-        (update-in [:todo-widget :todo-list] merge {new-item-id new-item})
-        (assoc-in  [:todo-widget :editing-item-id] new-item-id)
-        (assoc-in  [:todo-widget :quick-filter] "")
-        (assoc-in  [:todo-widget :selected-tab] :tab-all)
-        
-        )))
+    {:db (-> (:db cofx)
+             (update-in [:todo-widget :todo-list] merge {new-item-id new-item})
+             (assoc-in  [:todo-widget :editing-item-id] new-item-id)
+             (assoc-in  [:todo-widget :quick-filter] "")
+             (assoc-in  [:todo-widget :selected-tab] :tab-all))
+     :fx (conj (:fx cofx) [:focus-element-by-id "input-new"])}))
 
-(rf/reg-event-db
+(rf/reg-event-fx
  :add-todo-item
  add-todo-item-handler)
 
@@ -60,10 +59,11 @@
 
 ;; ---------------
 
-(defn edit-todo-item-handler [db [_ todo-item-id]]
-  (assoc-in db [:todo-widget :editing-item-id] todo-item-id))
+(defn edit-todo-item-handler [cofx [_ todo-item-id]]
+  {:db (assoc-in (:db cofx) [:todo-widget :editing-item-id] todo-item-id)
+   :fx (conj  (:fx cofx) [:focus-element-by-id (str "input-" todo-item-id)])})
 
-(rf/reg-event-db
+(rf/reg-event-fx
  :edit-todo-item
  edit-todo-item-handler)
 
@@ -113,11 +113,11 @@
       (inc (apply max numeric-ids)))))
 
 (defn  commit-edit-todo-item [todo-list todo-item-id todo-item-text]
-  (if (= temp-todo-item-id todo-item-id) 
-      (-> todo-list
-          (assoc (next-id todo-list) (-> (get todo-list todo-item-id)
-                                         (assoc :text todo-item-text)))
-          (dissoc temp-todo-item-id))
+  (if (= temp-todo-item-id todo-item-id)
+    (-> todo-list
+        (assoc (next-id todo-list) (-> (get todo-list todo-item-id)
+                                       (assoc :text todo-item-text)))
+        (dissoc temp-todo-item-id))
     (update todo-list todo-item-id assoc :text todo-item-text)))
 
 (defn save-edit-todo-item-handler [db [_ todo-item-text]]
@@ -148,3 +148,11 @@
 
 (defn >toggle-done [todo-item-id]
   (rf/dispatch [:toggle-done todo-item-id]))
+
+(rf/reg-fx
+ :focus-element-by-id
+ (fn [element-id]
+   (js/console.log (str "focus-element-by-id " element-id))
+   (js/setTimeout
+    #(.focus (.getElementById js/document element-id))
+    100)))
