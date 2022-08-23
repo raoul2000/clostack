@@ -1,6 +1,14 @@
 (ns default.subs
-  (:require [re-frame.core :as rf]))
+  (:require [re-frame.core :as rf]
+            [default.todo.subs :as todo]))
 
+
+(defn create-initial-state []
+  (merge {:route            [:widget-route]   ;; default route is the home page
+          :saying-hi        false
+          :show-modal-demo  false
+          :show-left-drawer false}
+         (todo/create-initial-state)))
 ;; layer 2 ------------------------------------------------------
 
 (rf/reg-sub  :username

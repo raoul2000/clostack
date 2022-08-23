@@ -1,30 +1,32 @@
 (ns default.events
   (:require [re-frame.core :as rf]
-            [ajax.core :as ajax]))
+            [ajax.core :as ajax]
+            [default.subs :refer [create-initial-state]]))
+
+(defn initialize-state-handler [_ _]
+  (create-initial-state))
 
 (rf/reg-event-db
  :initialize-state
- (fn [_ _]
-   {:route            [:home-route]   ;; default route is the home page
-    :saying-hi        false
-    :show-modal-demo  false
-    :show-left-drawer false}))
+ initialize-state-handler)
 
 (defn >initialize-state
   "Synchronously dispatch the event to initialize the app state"
   []
   (rf/dispatch-sync [:initialize-state]))
 
-;; signals that the action to say hi to the server is in progress (true) or not (false)
-(defn saying-hi-handler [db [_ in-progress]]
+(defn saying-hi-handler 
+  "signals that the action to say 'hi' to the server is in progress (true) or not (false)"
+  [db [_ in-progress]]
   (assoc db :saying-hi in-progress))
 
 (rf/reg-event-db
  :saying-hi
  saying-hi-handler)
 
-;; success on saying hi to the server
-(defn said-hi-success-handler [cofx [_ result]]
+(defn said-hi-success-handler 
+  "Handle the event emited when the action to say 'hi' to the server ended successfully"
+  [cofx [_ result]]
   {:db (-> (:db cofx)
            (assoc :said-hi-success result)
            (assoc :greet-from-server (:reply result)))
@@ -36,7 +38,9 @@
  said-hi-success-handler)
 
 ;; failed on saying hi to the server
-(defn said-hi-failure-handler [cofx [_ result]]
+(defn said-hi-failure-handler 
+  "Handle the event emited when the action to say 'hi' to the server failed"
+  [cofx [_ result]]
   {:db (assoc (:db cofx) :said-hi-error result)
    :fx (conj  (:fx cofx) [:dispatch [:saying-hi false]])})
 
