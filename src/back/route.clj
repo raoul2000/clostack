@@ -5,6 +5,7 @@
             [io.pedestal.http.ring-middlewares :as ring-mw]
             [io.pedestal.http.body-params :refer [body-params]]
             [response :as resp]
+            [todo :as todo]
             [babashka.fs :as fs]))
 
 (def common-interceptors [resp/coerce-body resp/content-negotiator (body-params)])
@@ -105,7 +106,10 @@
                                                ;; based on the extension of the file to download. 
                                                ;; If not set, content-type defaults to application/octet-stream 
                                                (ring-mw/file-info)
-                                               download-file]           :route-name :get-download]})
+                                               download-file]           :route-name :get-download]
+                      ;; todo resource
+                      ["/todo"   :get  (conj common-interceptors todo/read)  :route-name :get-todo]
+                      ["/todo"   :post (conj common-interceptors todo/write) :route-name :post-todo]})
 
 (def routes
   (prt/expand-routes default-routes))

@@ -1,0 +1,37 @@
+
+GET {{baseUrl}}/todo
+Accept: application/json
+
+###
+GET {{baseUrl}}/todo
+Accept: application/edn
+
+###
+GET {{baseUrl}}/todo
+Accept: application/transit+json
+
+###
+
+POST {{baseUrl}}/todo
+Content-Type: application/json
+Accept: application/json
+
+{"1" : {"text" : "____buy some milk",
+        "done" : false},
+ "2" : {"text" : "____Call Bob",
+        "done" : true}}
+
+###
+
+POST {{baseUrl}}/todo
+Content-Type: application/edn
+
+{:1   {:text  "____do something funny"
+        :done  false}
+ :2   {:text  "____do something clever"
+        :done  true}}
+        
+###
+# error 
+POST {{baseUrl}}/todo
+Content-Type: application/edn
