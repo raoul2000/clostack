@@ -2,15 +2,28 @@
   (:require [re-frame.core :as rf]
             [clojure.string :refer [includes?]]))
 
+
+(def state-sample {:todo-widget {:todo-list         {"1"   {:text  "do something"
+                                                            :done  false}
+                                                     "2"   {:text  "do something else"
+                                                            :done  true}}
+                                 :editing-item-id     nil
+                                 :ordered-ids         [] ;; not used yet
+                                 :quick-filter        ""
+                                 :selected-tab        :tab-all
+                                 :load-progress       false
+                                 :load-error          true
+                                 :load-error-message  "invalid address in header"}})
+
 (defn create-initial-state []
-  {:todo-widget {:todo-list      {"1"   {:text  "do something"
-                                       :done  false}
-                                  "2"   {:text  "do something else"
-                                       :done  true}}
-                 :editing-item-id  nil
-                 :ordered-ids      [] ;; not used yet
-                 :quick-filter     ""
-                 :selected-tab     :tab-all}})
+  {:todo-widget {:todo-list         {}
+                 :editing-item-id     nil
+                 :ordered-ids         [] ;; not used yet
+                 :quick-filter        ""
+                 :selected-tab        :tab-all
+                 :load-progress       false
+                 :load-error          false
+                 :load-error-message  "jhelp"}})
 
 ;; layer 2 ------------------------------------------------------
 
@@ -42,6 +55,27 @@
   "subscribe to the id of the todo item being edited"
   []
   @(rf/subscribe [:editing-item-id]))
+
+(rf/reg-sub :load-progress
+            (fn [db _]
+              (get-in db [:todo-widget :load-progress])))
+
+(defn <load-progress []
+  @(rf/subscribe [:load-progress]))
+
+(rf/reg-sub :load-error
+            (fn [db _]
+              (get-in db [:todo-widget :load-error])))
+
+(defn <load-error []
+  @(rf/subscribe [:load-error]))
+
+(rf/reg-sub :load-error-message
+            (fn [db _]
+              (get-in db [:todo-widget :load-error-message])))
+
+(defn <load-error-message []
+  @(rf/subscribe [:load-error-message]))
 
 ;; layer 3 -------------------------------------------------
 

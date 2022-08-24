@@ -1,7 +1,9 @@
 (ns default.todo.views
   (:require [reagent.core :as r]
+            [clojure.string :refer [blank?]]
             [default.todo.subs :refer [<selected-tab <quick-filter <todo-list
-                                       <editing-item-id <filtered-todo-list]]
+                                       <editing-item-id <filtered-todo-list <load-progress
+                                       <load-error <load-error-message]]
             [default.todo.events :refer [>select-tab >quick-filter-update >add-todo-item
                                          >edit-todo-item >delete-todo-item >cancel-edit-todo-item
                                          >save-edit-todo-item >toggle-done]]))
@@ -84,11 +86,36 @@
     {:on-click >add-todo-item
      :disabled (<editing-item-id)} "New..."]])
 
-(defn render []
-  [:nav.panel
-   [:p.panel-heading "Todo List"]
+(defn render-load-progress  []
+  [:div.box
+   "Loading your todo list"
+   [:progress.progress.is-small.is-info "loading..."]])
+
+(defn render-load-error []
+  [:div.box
+   [:div.icon-text
+    [:span.icon.has-text-danger
+     [:i.mdi.mdi-close-octagon.mdi-18px]]
+    [:b "Something went wrong !"]]
+   [:p "Sorry but it seems that your todo list could not be loaded."]
+   (let [error-message (<load-error-message)]
+     (when-not (blank? error-message)
+       [:div.content
+        [:p "The server returns this message : "]
+        [:blockquote error-message]]))])
+
+(defn render-todo-list []
+  [:<>
    [quick-filter]
    [selector-tabs]
    [:div.todo-list-container
     (doall (map render-todo-item (<filtered-todo-list)))]
    [action-bar]])
+
+(defn render []
+  [:nav.panel
+   [:p.panel-heading "Todo List"]
+   (cond
+     (<load-progress) (render-load-progress)
+     (<load-error)    (render-load-error)
+     :else            (render-todo-list))])
