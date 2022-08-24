@@ -1,7 +1,8 @@
 (ns default.todo.events
   (:require [re-frame.core :as rf]
             [clojure.string :refer [trim]]
-            [ajax.core :as ajax]))
+            [ajax.core :as ajax]
+            [ajax.edn :refer [edn-response-format]]))
 
 (def temp-todo-item-id "-1")
 
@@ -183,7 +184,7 @@
    :http-xhrio {:method          :get
                 :uri             "/todo"
                 :timeout         8000                                           ;; optional see API docs
-                :response-format (ajax/json-response-format {:keywords? true})  ;; IMPORTANT!: You must provide this.
+                :response-format (edn-response-format)  ;; IMPORTANT!: You must provide this.
                 :on-success      [:load-success]
                 :on-failure      [:load-error]}})
 
