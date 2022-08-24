@@ -2,7 +2,7 @@
   (:require [re-frame.core :as rf]
             [clojure.string :refer [trim]]))
 
-(def temp-todo-item-id "new")
+(def temp-todo-item-id "-1")
 
 ;; ---------------
 
@@ -46,7 +46,7 @@
              (assoc-in  [:todo-widget :editing-item-id] new-item-id)
              (assoc-in  [:todo-widget :quick-filter] "")
              (assoc-in  [:todo-widget :selected-tab] :tab-all))
-     :fx (conj (:fx cofx) [:focus-element-by-id "input-new"])}))
+     :fx (conj (:fx cofx) [:focus-element-by-id (str "input-" temp-todo-item-id)])}))
 
 (rf/reg-event-fx
  :add-todo-item
@@ -107,10 +107,10 @@
 ;; -----------------
 
 (defn next-id [todo-list]
-  (let [numeric-ids (filter int? (keys todo-list))]
-    (if (empty? numeric-ids)
-      1
-      (inc (apply max numeric-ids)))))
+  (str (let [numeric-ids (map #(js/parseInt %) (keys todo-list))]
+         (if (empty? numeric-ids)
+           1
+           (inc (apply max numeric-ids))))))
 
 (defn  commit-edit-todo-item [todo-list todo-item-id todo-item-text]
   (if (= temp-todo-item-id todo-item-id)

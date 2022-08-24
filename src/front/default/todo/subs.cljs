@@ -3,9 +3,9 @@
             [clojure.string :refer [includes?]]))
 
 (defn create-initial-state []
-  {:todo-widget {:todo-list      {1   {:text  "do something"
+  {:todo-widget {:todo-list      {"1"   {:text  "do something"
                                        :done  false}
-                                  2   {:text  "do something else"
+                                  "2"   {:text  "do something else"
                                        :done  true}}
                  :editing-item-id  nil
                  :ordered-ids      [] ;; not used yet
