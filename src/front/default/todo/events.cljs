@@ -4,6 +4,8 @@
             [ajax.core :as ajax]
             [ajax.edn :refer [edn-response-format]]))
 
+;; when adding an item, a new entry is conjed to the todo list map
+;; with a specific and temporary id
 (def temp-todo-item-id "-1")
 
 ;; ---------------
@@ -55,7 +57,7 @@
  add-todo-item-handler)
 
 (defn >add-todo-item
-  "User is adding a new item"
+  "User is starting edition of a new item"
   []
   (rf/dispatch [:add-todo-item]))
 
@@ -70,7 +72,7 @@
  edit-todo-item-handler)
 
 (defn >edit-todo-item
-  "User is editing a todo item given its id"
+  "User is editing an existing todo item with the given id"
   [todo-item-id]
   (rf/dispatch [:edit-todo-item todo-item-id]))
 
@@ -116,14 +118,16 @@
 
 (defn  commit-edit-todo-item [todo-list todo-item-id todo-item-text]
   (if (= temp-todo-item-id todo-item-id)
+    ;; a new item is added: the temp item is committed
     (-> todo-list
         (assoc (next-id todo-list) (-> (get todo-list todo-item-id)
                                        (assoc :text todo-item-text)))
         (dissoc temp-todo-item-id))
+    ;; an existing item was updated
     (update todo-list todo-item-id assoc :text todo-item-text)))
 
 (defn save-edit-todo-item-handler [db [_ todo-item-text]]
-  (let [edited-todo-item-id (get-in db   [:todo-widget :editing-item-id])
+  (let [edited-todo-item-id (get-in   db [:todo-widget :editing-item-id])
         updated-db          (assoc-in db [:todo-widget :editing-item-id] nil)]
     (update-in updated-db [:todo-widget :todo-list] commit-edit-todo-item edited-todo-item-id todo-item-text)))
 
@@ -132,7 +136,9 @@
  save-edit-todo-item-handler)
 
 (defn >save-edit-todo-item
-  "User save todo item after edition"
+  "User save todo item after edition. This item can be an existing one being updated
+   or a new one being added to the todo list.
+   When the given todo item text is empty nothing is done."
   [todo-item-text]
   (let [normalized-text (trim todo-item-text)]
     (when-not (empty?   normalized-text)
@@ -148,14 +154,15 @@
  :toggle-done
  toggle-done-handler)
 
-(defn >toggle-done [todo-item-id]
+(defn >toggle-done 
+  "User toggle done status of a todo item given its id"
+  [todo-item-id]
   (rf/dispatch [:toggle-done todo-item-id]))
 
 (rf/reg-fx
  :focus-element-by-id
  (fn [element-id]
-   (js/console.log (str "focus-element-by-id " element-id))
-   (js/setTimeout
+   (js/setTimeout ;; 'ensure' element is mounted in the DOM 
     #(.focus (.getElementById js/document element-id))
     100)))
 
@@ -183,7 +190,7 @@
    :fx         (:fx cofx)
    :http-xhrio {:method          :get
                 :uri             "/todo"
-                :timeout         8000                                           ;; optional see API docs
+                :timeout         8000                   ;; optional see API docs
                 :response-format (edn-response-format)  ;; IMPORTANT!: You must provide this.
                 :on-success      [:load-success]
                 :on-failure      [:load-error]}})
@@ -192,5 +199,7 @@
  :load-remote
  load-remote-handler)
 
-(defn >load-remote []
+(defn >load-remote 
+  "Load Todo list from server"
+  []
   (rf/dispatch [:load-remote]))
