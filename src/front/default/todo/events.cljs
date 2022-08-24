@@ -1,6 +1,7 @@
 (ns default.todo.events
   (:require [re-frame.core :as rf]
-            [clojure.string :refer [trim]]))
+            [clojure.string :refer [trim]]
+            [ajax.core :as ajax]))
 
 (def temp-todo-item-id "-1")
 
@@ -156,3 +157,39 @@
    (js/setTimeout
     #(.focus (.getElementById js/document element-id))
     100)))
+
+;; --------------------
+
+(rf/reg-event-db
+ :load-success
+ (fn [db [_ response]]
+   (update db :todo-widget merge {:todo-list          response
+                                  :load-progress      false
+                                  :load-error         false
+                                  :load-error-message nil})))
+
+(rf/reg-event-db
+ :load-error
+ (fn [db [_ response]]
+   (update db :todo-widget merge {:load-progress      false
+                                  :load-error         true
+                                  :load-error-message (:last-error response)})))
+
+(defn load-remote-handler [cofx _]
+  {:db         (update-in (:db cofx) [:todo-widget :load-progress] merge {:load-progress      true
+                                                                          :load-error         false
+                                                                          :load-error-message nil})
+   :fx         (:fx cofx)
+   :http-xhrio {:method          :get
+                :uri             "/todo"
+                :timeout         8000                                           ;; optional see API docs
+                :response-format (ajax/json-response-format {:keywords? true})  ;; IMPORTANT!: You must provide this.
+                :on-success      [:load-success]
+                :on-failure      [:load-error]}})
+
+(rf/reg-event-fx
+ :load-remote
+ load-remote-handler)
+
+(defn >load-remote []
+  (rf/dispatch [:load-remote]))

@@ -1,6 +1,7 @@
 (ns default.todo.subs
   (:require [re-frame.core :as rf]
-            [clojure.string :refer [includes?]]))
+            [clojure.string :refer [includes?]]
+            [default.todo.events :refer [>load-remote]]))
 
 
 (def state-sample {:todo-widget {:todo-list         {"1"   {:text  "do something"
@@ -16,6 +17,7 @@
                                  :load-error-message  "invalid address in header"}})
 
 (defn create-initial-state []
+  (>load-remote)
   {:todo-widget {:todo-list         {}
                  :editing-item-id     nil
                  :ordered-ids         [] ;; not used yet
@@ -23,7 +25,7 @@
                  :selected-tab        :tab-all
                  :load-progress       false
                  :load-error          false
-                 :load-error-message  "jhelp"}})
+                 :load-error-message  ""}})
 
 ;; layer 2 ------------------------------------------------------
 

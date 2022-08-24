@@ -1,7 +1,7 @@
 (ns default.todo.views
   (:require [reagent.core :as r]
             [clojure.string :refer [blank?]]
-            [default.todo.subs :refer [<selected-tab <quick-filter <todo-list
+            [default.todo.subs :refer [<selected-tab <quick-filter
                                        <editing-item-id <filtered-todo-list <load-progress
                                        <load-error <load-error-message]]
             [default.todo.events :refer [>select-tab >quick-filter-update >add-todo-item
@@ -53,10 +53,10 @@
       [:<>
        [:span.is-flex-grow-1
         [:input.input {:id            (str "input-" id)
-                       :type         "text"
-                       :placeholder  "what do you have to do ?"
-                       :value        @input-text
-                       :on-change    update-input-text
+                       :type          "text"
+                       :placeholder   "what do you have to do ?"
+                       :value         @input-text
+                       :on-change     update-input-text
                        :on-key-press  #(when (= 13 (.-charCode %)) (>save-edit-todo-item @input-text))}]]
        [:div.is-flex.is-justify-content-flex-end
         [:span.panel-icon.todo-action.todo-action-save
@@ -113,9 +113,10 @@
    [action-bar]])
 
 (defn render []
-  [:nav.panel
+  (fn []
+    [:nav.panel
    [:p.panel-heading "Todo List"]
    (cond
-     (<load-progress) (render-load-progress)
      (<load-error)    (render-load-error)
-     :else            (render-todo-list))])
+     (<load-progress) (render-load-progress) 
+     :else            (render-todo-list))]))
