@@ -1,13 +1,41 @@
 (ns default.todo.events
   (:require [re-frame.core :as rf]
             [clojure.string :refer [trim]]
-            [ajax.core :as ajax]
             [ajax.edn :refer [edn-response-format edn-request-format]]))
 
 ;; when adding an item, a new entry is conjed to the todo list map
 ;; with a specific and temporary id
 (def temp-todo-item-id "-1")
 
+;; ---------------
+
+(rf/reg-event-db
+ :save-success
+ (fn [db [_ response]]
+   (update db :todo-widget merge {:todo-list          response
+                                  :save-progress      false
+                                  :save-error         false
+                                  :save-error-message nil})))
+
+(rf/reg-event-db
+ :save-error
+ (fn [db [_ response]]
+   (update db :todo-widget merge {:save-progress      false
+                                  :save-error         true
+                                  :save-error-message (:last-error response)})))
+
+(def save-todo-list
+  "interceptor running after event handler to save todo-list to server"
+  (rf/->interceptor {:id :save-todo-list-interc
+                     :after (fn [context]       ;; applied after the db is updated
+                              (let [todo-list (get-in context [:effects :db :todo-widget :todo-list])]
+                                (update-in context [:effects] #(assoc % :http-xhrio {:method          :post
+                                                                                     :uri             "/todo"
+                                                                                     :format          (edn-request-format)
+                                                                                     :params          todo-list
+                                                                                     :response-format (edn-response-format)
+                                                                                     :on-success      [:save-success]
+                                                                                     :on-failure      [:save-error]}))))}))
 ;; ---------------
 
 (defn select-tab-handler
@@ -83,6 +111,7 @@
 
 (rf/reg-event-db
  :delete-todo-item
+ [save-todo-list]
  delete-todo-item)
 
 (defn >delete-todo-item
@@ -126,15 +155,14 @@
     ;; an existing item was updated
     (update todo-list todo-item-id assoc :text todo-item-text)))
 
-(defn save-edit-todo-item-handler [cofx [_ todo-item-text]]
-  (let [db                  (:db cofx)
-        edited-todo-item-id (get-in   db [:todo-widget :editing-item-id])
+(defn save-edit-todo-item-handler [db [_ todo-item-text]]
+  (let [edited-todo-item-id (get-in   db [:todo-widget :editing-item-id])
         updated-db          (assoc-in db [:todo-widget :editing-item-id] nil)]
-    {:db (update-in updated-db [:todo-widget :todo-list] commit-edit-todo-item edited-todo-item-id todo-item-text)
-     :fx [[:dispatch [:save-remote]]]}))
+    (update-in updated-db [:todo-widget :todo-list] commit-edit-todo-item edited-todo-item-id todo-item-text)))
 
-(rf/reg-event-fx
+(rf/reg-event-db
  :save-edit-todo-item
+ [save-todo-list]
  save-edit-todo-item-handler)
 
 (defn >save-edit-todo-item
@@ -148,13 +176,13 @@
 
 ;; --------------------
 
-(defn toggle-done-handler [cofx [_ todo-item-id]]
-  {:db (update-in (:db cofx) [:todo-widget :todo-list todo-item-id] (fn [old-todo-item]
-                                                                      (update old-todo-item :done not)))
-   :fx (conj (:fx cofx) [:dispatch [:save-remote]])})
+(defn toggle-done-handler [db [_ todo-item-id]]
+  (update-in db [:todo-widget :todo-list todo-item-id] (fn [old-todo-item]
+                                                         (update old-todo-item :done not))))
 
-(rf/reg-event-fx
+(rf/reg-event-db
  :toggle-done
+ [save-todo-list]
  toggle-done-handler)
 
 (defn >toggle-done
@@ -207,43 +235,4 @@
   []
   (rf/dispatch [:load-remote]))
 
-;; --------------------
-
-(rf/reg-event-db
- :save-success
- (fn [db [_ response]]
-   (update db :todo-widget merge {:todo-list          response
-                                  :save-progress      false
-                                  :save-error         false
-                                  :save-error-message nil})))
-
-(rf/reg-event-db
- :save-error
- (fn [db [_ response]]
-   (update db :todo-widget merge {:save-progress      false
-                                  :save-error         true
-                                  :save-error-message (:last-error response)})))
-
-(defn save-remote-handler [cofx _]
-  {:db         (update (:db cofx) :todo-widget merge {:save-progress      true
-                                                      :save-error         false
-                                                      :save-error-message nil})
-   :fx         (or (:fx cofx) [])  ;; why ?  because shows warning in console when null
-   :http-xhrio {:method          :post
-                :uri             "/todo"
-                :timeout         8000                   ;; optional see API docs
-                :format          (edn-request-format)
-                :params          (get-in cofx [:db :todo-widget :todo-list])
-                :response-format (edn-response-format)  ;; IMPORTANT!: You must provide this.
-                :on-success      [:save-success]
-                :on-failure      [:save-error]}})
-
-(rf/reg-event-fx
- :save-remote
- save-remote-handler)
-
-(defn >save-remote
-  "Save Todo list to server"
-  []
-  (rf/dispatch [:save-remote]))
 
