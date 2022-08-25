@@ -111,10 +111,7 @@
       [:div.icon-text
        [:span.icon.has-text-danger
         [:i.mdi.mdi-close-octagon.mdi-18px]]
-        "Oups ... it seems your changes could not be saved."]
-      ]
-     )
-   
+       "Oups ... it seems your changes could not be saved."]])
    [selector-tabs]
    [quick-filter]
    [:div.todo-list-container

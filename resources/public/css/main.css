@@ -54,7 +54,7 @@ html,body {
 /* ------------ Todo widget --------------*/
 
 .todo-list-container {
-  /*max-height: 250px;*/
+  max-height: 11em;
   overflow: auto;
 }
 .mark-done {
