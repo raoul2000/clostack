@@ -3,7 +3,7 @@
             [clojure.string :refer [blank?]]
             [default.todo.subs :refer [<selected-tab <quick-filter
                                        <editing-item-id <filtered-todo-list <load-progress
-                                       <load-error <load-error-message]]
+                                       <load-error <load-error-message <save-error]]
             [default.todo.events :refer [>select-tab >quick-filter-update >add-todo-item
                                          >edit-todo-item >delete-todo-item >cancel-edit-todo-item
                                          >save-edit-todo-item >toggle-done]]))
@@ -106,8 +106,17 @@
 
 (defn render-todo-list []
   [:<>
-   [quick-filter]
+   (when (<save-error)
+     [:div.box.is-shadowless
+      [:div.icon-text
+       [:span.icon.has-text-danger
+        [:i.mdi.mdi-close-octagon.mdi-18px]]
+        "Oups ... it seems your changes could not be saved."]
+      ]
+     )
+   
    [selector-tabs]
+   [quick-filter]
    [:div.todo-list-container
     (doall (map render-todo-item (<filtered-todo-list)))]
    [action-bar]])
@@ -115,8 +124,8 @@
 (defn render []
   (fn []
     [:nav.panel
-   [:p.panel-heading "Todo List"]
-   (cond
-     (<load-error)    (render-load-error)
-     (<load-progress) (render-load-progress) 
-     :else            (render-todo-list))]))
+     [:p.panel-heading "Todo List"]
+     (cond
+       (<load-error)    (render-load-error)
+       (<load-progress) (render-load-progress)
+       :else            (render-todo-list))]))

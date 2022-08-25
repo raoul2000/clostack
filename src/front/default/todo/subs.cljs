@@ -14,7 +14,10 @@
                                  :selected-tab        :tab-all
                                  :load-progress       false
                                  :load-error          true
-                                 :load-error-message  "invalid address in header"}})
+                                 :load-error-message  "invalid address in header"
+                                 :save-progress       false
+                                 :save-error          true
+                                 :save-error-message  "some error occured"}})
 
 (defn create-initial-state []
   (>load-remote)
@@ -25,7 +28,10 @@
                  :selected-tab        :tab-all
                  :load-progress       false
                  :load-error          false
-                 :load-error-message  ""}})
+                 :load-error-message  ""
+                 :save-progress       false
+                 :save-error          false
+                 :save-error-message  ""}})
 
 ;; layer 2 ------------------------------------------------------
 
@@ -78,6 +84,24 @@
 
 (defn <load-error-message []
   @(rf/subscribe [:load-error-message]))
+
+;; -------------------------------
+
+(rf/reg-sub :save-error
+            (fn [db _]
+              (get-in db [:todo-widget :save-error])))
+
+(defn <save-error []
+  @(rf/subscribe [:save-error]))
+
+;; -------------------------------
+
+(rf/reg-sub :save-error-message
+            (fn [db _]
+              (get-in db [:todo-widget :save-error-message])))
+
+(defn <save-error-message []
+  @(rf/subscribe [:save-error-message]))
 
 ;; layer 3 -------------------------------------------------
 
