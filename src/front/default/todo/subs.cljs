@@ -1,6 +1,6 @@
 (ns default.todo.subs
   (:require [re-frame.core :as rf]
-            [clojure.string :refer [includes? lower-case]]
+            [clojure.string :refer [includes? lower-case trim]]
             [default.todo.events :refer [>load-remote]]))
 
 
@@ -113,8 +113,8 @@
             (fn [[todo-list filter-text selected-tab] _]
               (cond-> todo-list
                 (not= "" filter-text)       (->> ,,,
-                                             (filter #(includes? (lower-case (get (second %) :text)) 
-                                                                 (lower-case filter-text)))
+                                             (filter #(includes? (lower-case (trim (get (second %) :text))) 
+                                                                 (lower-case (trim filter-text))))
                                              (into {}))
                 (= selected-tab :tab-todo) (->> ,,,
                                             (filter #(not (get (second %) :done)))
