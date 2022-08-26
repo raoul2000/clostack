@@ -107,9 +107,9 @@
                                                ;; If not set, content-type defaults to application/octet-stream 
                                                (ring-mw/file-info)
                                                download-file]           :route-name :get-download]
-                      ;; todo resource
-                      ["/todo"   :get  (conj common-interceptors todo/read)  :route-name :get-todo]
-                      ["/todo"   :post (conj common-interceptors todo/write) :route-name :post-todo]})
+                      ;; todo resource 
+                      ["/todo"   :get  (conj common-interceptors todo/read-todo-list)  :route-name :get-todo]
+                      ["/todo"   :post (conj common-interceptors todo/write-todo-list) :route-name :post-todo]})
 
 (def routes
   (prt/expand-routes default-routes))
