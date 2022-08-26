@@ -7,7 +7,28 @@
 ;; with a specific and temporary id
 (def temp-todo-item-id "-1")
 
-;; ---------------
+;; a custom effect to give focus to an element given its id
+(rf/reg-fx
+ :focus-element-by-id
+ (fn [element-id]
+   (js/setTimeout ;; 'ensure' element is mounted in the DOM 
+    #(.focus (.getElementById js/document element-id))
+    100)))
+
+(def save-todo-list
+  "interceptor running after event handler to save todo-list to server"
+  (rf/->interceptor {:id :save-todo-list-interc
+                     :after (fn [context]       ;; applied after the db is updated
+                              (let [todo-list (get-in context [:effects :db :todo-widget :todo-list])]
+                                (update-in context [:effects] #(assoc % :http-xhrio {:method          :post
+                                                                                     :uri             "/todo"
+                                                                                     :format          (edn-request-format)
+                                                                                     :params          todo-list
+                                                                                     :response-format (edn-response-format)
+                                                                                     :on-success      [:save-success]
+                                                                                     :on-failure      [:save-error]}))))}))
+
+;; --------------- Events definition -----------------------------------
 
 (rf/reg-event-db
  :save-success
@@ -24,18 +45,6 @@
                                   :save-error         true
                                   :save-error-message (:last-error response)})))
 
-(def save-todo-list
-  "interceptor running after event handler to save todo-list to server"
-  (rf/->interceptor {:id :save-todo-list-interc
-                     :after (fn [context]       ;; applied after the db is updated
-                              (let [todo-list (get-in context [:effects :db :todo-widget :todo-list])]
-                                (update-in context [:effects] #(assoc % :http-xhrio {:method          :post
-                                                                                     :uri             "/todo"
-                                                                                     :format          (edn-request-format)
-                                                                                     :params          todo-list
-                                                                                     :response-format (edn-response-format)
-                                                                                     :on-success      [:save-success]
-                                                                                     :on-failure      [:save-error]}))))}))
 ;; ---------------
 
 (defn select-tab-handler
@@ -69,15 +78,16 @@
 ;; ---------------
 
 (defn add-todo-item-handler [cofx _]
-  ;; by convention, a new todo item has id = "new" until user saves it
+  ;; by convention, a new todo item is assigned a temporary id (see temp-todo-item-id)
+  ;; until user actually saves it
   (let [new-item-id temp-todo-item-id
         new-item  {:text ""
                    :done false}]
     {:db (-> (:db cofx)
-             (update-in [:todo-widget :todo-list] merge {new-item-id new-item})
+             (update-in [:todo-widget :todo-list]       merge {new-item-id new-item})
              (assoc-in  [:todo-widget :editing-item-id] new-item-id)
-             (assoc-in  [:todo-widget :quick-filter] "")
-             (assoc-in  [:todo-widget :selected-tab] :tab-all))
+             (assoc-in  [:todo-widget :quick-filter]    "")
+             (assoc-in  [:todo-widget :selected-tab]    :tab-all))
      :fx (conj (:fx cofx) [:focus-element-by-id (str "input-" temp-todo-item-id)])}))
 
 (rf/reg-event-fx
@@ -133,13 +143,15 @@
  cancel-edit-todo-item-handler)
 
 (defn >cancel-edit-todo-item
-  "User cancel todo item edition"
+  "User cancels todo item edition"
   []
   (rf/dispatch [:cancel-edit-todo-item]))
 
 ;; -----------------
 
-(defn next-id [todo-list]
+(defn next-id 
+  "Given a todo list, returns the next available id"
+  [todo-list]
   (str (let [numeric-ids (map #(js/parseInt %) (keys todo-list))]
          (if (empty? numeric-ids)
            1
@@ -190,13 +202,6 @@
   [todo-item-id]
   (rf/dispatch [:toggle-done todo-item-id]))
 
-(rf/reg-fx
- :focus-element-by-id
- (fn [element-id]
-   (js/setTimeout ;; 'ensure' element is mounted in the DOM 
-    #(.focus (.getElementById js/document element-id))
-    100)))
-
 ;; --------------------
 
 (rf/reg-event-db
@@ -234,5 +239,3 @@
   "Load Todo list from server"
   []
   (rf/dispatch [:load-remote]))
-
-
