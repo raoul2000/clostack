@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
+## [unreleased]
+### Added
+- Front
+  - Drawer (left menu bar)
+  - Todo Widget : illustrate Re-frame features and ajax
+- Back
+  - Todo REST API: read and write todo list from file
 
 ## [0.0.3]
 ### Added
@@ -15,7 +22,7 @@ and this project adheres to [Semantic Versioning].
   - add dependency to [Bulma](https://bulma.io) (pure CSS Framework)
   - redesign pages: 
     - home: the home page for presentation
-    - widgets: demostrate various feature : ajax, modal, notification, drawer, todo list
+    - widgets: demostrate various feature : ajax, modal, notification
 
 ## [0.0.2]
 - ready to use dev environment and tooling (see [README](README.md) for details)
