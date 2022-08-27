@@ -5,7 +5,9 @@
             [default.subs :refer [<greet-from-server <saying-hi <show-modal-demo <show-left-drawer]]
             [goog.string :as gstring]
             [goog.string.format]
-            [default.todo.views :as todo]))
+            [default.todo.views :as todo]
+            [goog.style :as style]
+            [goog.dom.classes :as classes]))
 
 ;; widgets -----------------------------------------------------------------------------------------
 
@@ -145,13 +147,62 @@
    [:div.panel-block
     [:div.content
      [:p "Click on the button below to open the" [:b " left menu"]]
-     [:p "the menu is currently " (if (<show-left-drawer) [:span.tag.is-success "opened"] [:span.tag.is-danger "closed"])]
-     ]]
+     [:p "the menu is currently " (if (<show-left-drawer) [:span.tag.is-success "opened"] [:span.tag.is-danger "closed"])]]]
    [:div.panel-block
     [:button.button.is-fullwidth.is-link {:on-click #(>show-left-drawer true)}
      "Open"]]])
 
+
+(defn re-order [list-item move-item before-item]
+  (if (= move-item before-item)
+    list-item
+    (reduce (fn [res i]
+              (cond
+                (= i move-item) res
+                (= i before-item) (conj res move-item before-item)
+                :else (conj res i))) [] list-item)))
+
+(defn render-item [idx text re-order-fn]
+  [:a.panel-block  {:id text
+                    :key text
+                    :draggable "true"
+                    :on-drag-start #(do
+                                      (js/console.log "drag start")
+                                      (.setData (.-dataTransfer %) "text/plain" (-> % .-target .-id))
+                                      (classes/add (.-target %) "drag-start"))
+                    :on-drag-enter #(do
+                                      (js/console.log "drag enter")
+                                      (js/console.log (-> % .-target))
+                                      (.preventDefault %)
+                                      (classes/add (.-target %) "drag-enter"))
+                    :on-drag-over   #(do
+                                       ;;(js/console.log "drag over")
+                                       (.preventDefault %))
+                    :on-drag-leave #(do
+                                      (js/console.log "drag leave")
+                                      (classes/remove (-> % .-target) "drag-enter"))
+                    :on-drop   #(do
+                                  (js/console.log "drop")
+                                  (js/console.log (str (.getData (.-dataTransfer %) "text/plain")
+                                                       " dropped to " (-> % .-target .-id)))
+                                  (classes/remove (.-target %) "drag-enter")
+                                  (js/console.log (.getData (.-dataTransfer %) "text/plain"))
+                                  (re-order-fn (.getData (.-dataTransfer %) "text/plain")
+                                               (-> % .-target .-id))
+                                  (.preventDefault %))}
+   text])
+
+(defn drag-and-drop-list []
+  (let [items (r/atom ["blue" "red" "green" "black" "white" "purple"])
+        re-order-fn (fn [move before]
+                      (swap! items re-order move before))]
+    (fn []
+      [:div.panel.is-link
+       [:div.panel-heading "Drag and drop"]
+       (doall (map-indexed #(render-item %1 %2 re-order-fn) @items))])))
+
 ;; pages -----------------------------------------------------------------------------------------
+
 
 (defn widget []
   [:div.section
@@ -161,7 +212,8 @@
     [:div.column.is-3 [notification-widget]]
     [:div.column.is-3 [drawer-control]]]
    [:div.columns
-    [:div.column.is-4 [todo/render]]]])
+    [:div.column.is-4 [todo/render]]
+    [:div.column.is-4 [drag-and-drop-list]]]])
 
 (defn home []
   [:div

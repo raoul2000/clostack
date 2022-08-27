@@ -87,6 +87,21 @@ html,body {
   visibility: visible;
 }
 
+/* drag and drop styles ---------------------- */
+.panel .panel-block.drag-start {
+  /*background-color: aqua;*/
+  /*border:1px solid black;*/
+}
+.panel .panel-block.drag-enter {  
+  /*background-color: green;*/
+  border-top-color: rgb(140, 140, 140);
+}
+
+.panel .panel-block {
+  border-top:1px solid white;
+}
+
+
 
 
 

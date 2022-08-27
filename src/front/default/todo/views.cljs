@@ -72,7 +72,13 @@
 (defn render-todo-item [[id {:keys [text done]}]]
   [:a.panel-block
    {:class (when done "mark-done")
-    :key   id}
+    :key   id
+    :draggable "true"
+    :on-drag-start #(do
+                      (js/console.log "drag start"))
+    :on-drag #(js/console.log "drag")
+    :on-drag-end #(js/console.log "drag end")
+    :on-drag-enter #(js/console.log (-> % .-target))}
    [:span.panel-icon
     {:on-click #(>toggle-done id)}
     [:i.mdi.mdi-check {:aria-hidden "true"}]]
