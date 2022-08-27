@@ -153,6 +153,36 @@
      "Open"]]])
 
 
+(defn render-item [id text re-order-fn]
+  [:a.panel-block  {:id             (name id)
+                    :key            (name id)
+                    :draggable      "true"
+                    :on-drag-start  #(do
+                                       (js/console.log "drag start")
+                                       (.setData (.-dataTransfer %) "text/plain" (-> % .-target .-id))
+                                       (classes/add (.-target %) "drag-start"))
+                    :on-drag-enter  #(do
+                                       (js/console.log "drag enter")
+                                       (js/console.log (-> % .-target))
+                                       (.preventDefault %)
+                                       (classes/add (.-target %) "drag-enter"))
+                    :on-drag-over   #(do
+                                       ;;(js/console.log "drag over")
+                                       (.preventDefault %))
+                    :on-drag-leave  #(do
+                                       (js/console.log "drag leave")
+                                       (classes/remove (-> % .-target) "drag-enter"))
+                    :on-drop        #(do
+                                       (js/console.log "drop")
+                                       (js/console.log (str (.getData (.-dataTransfer %) "text/plain")
+                                                            " dropped to " (-> % .-target .-id)))
+                                       (classes/remove (.-target %) "drag-enter")
+                                       (js/console.log (.getData (.-dataTransfer %) "text/plain"))
+                                       (re-order-fn (keyword (.getData (.-dataTransfer %) "text/plain"))
+                                                    (keyword (-> % .-target .-id)))
+                                       (.preventDefault %))}
+   text])
+
 (defn re-order [list-item move-item before-item]
   (if (= move-item before-item)
     list-item
@@ -162,44 +192,21 @@
                 (= i before-item) (conj res move-item before-item)
                 :else (conj res i))) [] list-item)))
 
-(defn render-item [idx text re-order-fn]
-  [:a.panel-block  {:id text
-                    :key text
-                    :draggable "true"
-                    :on-drag-start #(do
-                                      (js/console.log "drag start")
-                                      (.setData (.-dataTransfer %) "text/plain" (-> % .-target .-id))
-                                      (classes/add (.-target %) "drag-start"))
-                    :on-drag-enter #(do
-                                      (js/console.log "drag enter")
-                                      (js/console.log (-> % .-target))
-                                      (.preventDefault %)
-                                      (classes/add (.-target %) "drag-enter"))
-                    :on-drag-over   #(do
-                                       ;;(js/console.log "drag over")
-                                       (.preventDefault %))
-                    :on-drag-leave #(do
-                                      (js/console.log "drag leave")
-                                      (classes/remove (-> % .-target) "drag-enter"))
-                    :on-drop   #(do
-                                  (js/console.log "drop")
-                                  (js/console.log (str (.getData (.-dataTransfer %) "text/plain")
-                                                       " dropped to " (-> % .-target .-id)))
-                                  (classes/remove (.-target %) "drag-enter")
-                                  (js/console.log (.getData (.-dataTransfer %) "text/plain"))
-                                  (re-order-fn (.getData (.-dataTransfer %) "text/plain")
-                                               (-> % .-target .-id))
-                                  (.preventDefault %))}
-   text])
 
 (defn drag-and-drop-list []
-  (let [items (r/atom ["blue" "red" "green" "black" "white" "purple"])
-        re-order-fn (fn [move before]
-                      (swap! items re-order move before))]
+  (let [items (r/atom {:data {:1 "blue" :2 "red" :3 "green" :4 "black" :5 "white" :6 "purple"}
+                       :order [:1 :2 :3 :4 :6 :5]})
+        re-order-fn (fn [move-id before-id]
+                      (swap! items (fn [old-items]
+                                     (update old-items :order re-order move-id before-id))))]
     (fn []
       [:div.panel.is-link
        [:div.panel-heading "Drag and drop"]
-       (doall (map-indexed #(render-item %1 %2 re-order-fn) @items))])))
+       (let [item-list   @items
+             data        (get item-list :data)
+             ordered-ids (get item-list :order)]
+         (doall (map (fn [id]
+                       (render-item id (get data id) re-order-fn)) ordered-ids)))])))
 
 ;; pages -----------------------------------------------------------------------------------------
 
