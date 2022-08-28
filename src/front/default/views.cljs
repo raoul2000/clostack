@@ -6,10 +6,11 @@
             [goog.string :as gstring]
             [goog.string.format]
             [default.todo.views :as todo]
-            [goog.style :as style]
             [goog.dom.classes :as classes]))
 
 ;; widgets -----------------------------------------------------------------------------------------
+
+;; modal ----------------
 
 (defn modal [{:keys [username email country on-submit on-cancel]}]
   (let [form-data (r/atom {:username  username
@@ -90,6 +91,7 @@
        [:div.panel-block
         [:button.button.is-fullwidth.is-link {:on-click #(>show-modal-demo)} "Open Modal"]]])))
 
+;; Say Hi  ----------------
 
 (defn say-hi-widget []
   (let [username        (r/atom "")
@@ -114,6 +116,7 @@
           [:button.button.is-fullwidth.is-link {:class    [(when (<saying-hi) "is-loading")]
                                                 :on-click #(>say-hi-to @username)
                                                 :disabled empty-username?} "Say Hi"]]]))))
+;; notification ----------------
 
 (defn notification [{:keys [on-close message close-delay-ms]}]
   (when close-delay-ms
@@ -140,6 +143,7 @@
         [:button.button.is-fullwidth.is-link {:on-click #(reset! show-notif (not @show-notif))}
          "Show Notif"]]])))
 
+;; drawer ----------------
 
 (defn drawer-control []
   [:div.panel.is-link
@@ -152,35 +156,45 @@
     [:button.button.is-fullwidth.is-link {:on-click #(>show-left-drawer true)}
      "Open"]]])
 
+;; drag and drop ----------------
+
+(defn drag-start-handler [event]
+  (js/console.log "drag start")
+  (.setData (.-dataTransfer event) "text/plain" (-> event .-target .-id))
+  (classes/add (.-target event) "drag-start"))
+
+(defn drag-enter-handler [event]
+  (js/console.log "drag enter")
+  (js/console.log (-> event .-target))
+  (.preventDefault event)
+  (classes/add (.-target event) "drag-enter"))
+
+(defn drag-over-handler [event]
+  (.preventDefault event))
+
+(defn drag-leave-handler [event]
+  (js/console.log "drag leave")
+  (classes/remove (-> event .-target) "drag-enter"))
+
+(defn drop-handler [re-order-fn event]
+  (js/console.log "drop")
+  (js/console.log (str (.getData (.-dataTransfer event) "text/plain")
+                       " dropped to " (-> event .-target .-id)))
+  (classes/remove (.-target event) "drag-enter")
+  (js/console.log (.getData (.-dataTransfer event) "text/plain"))
+  (re-order-fn (keyword (.getData (.-dataTransfer event) "text/plain"))
+               (keyword (-> event .-target .-id)))
+  (.preventDefault event))
 
 (defn render-item [id text re-order-fn]
   [:a.panel-block  {:id             (name id)
                     :key            (name id)
                     :draggable      "true"
-                    :on-drag-start  #(do
-                                       (js/console.log "drag start")
-                                       (.setData (.-dataTransfer %) "text/plain" (-> % .-target .-id))
-                                       (classes/add (.-target %) "drag-start"))
-                    :on-drag-enter  #(do
-                                       (js/console.log "drag enter")
-                                       (js/console.log (-> % .-target))
-                                       (.preventDefault %)
-                                       (classes/add (.-target %) "drag-enter"))
-                    :on-drag-over   #(do
-                                       ;;(js/console.log "drag over")
-                                       (.preventDefault %))
-                    :on-drag-leave  #(do
-                                       (js/console.log "drag leave")
-                                       (classes/remove (-> % .-target) "drag-enter"))
-                    :on-drop        #(do
-                                       (js/console.log "drop")
-                                       (js/console.log (str (.getData (.-dataTransfer %) "text/plain")
-                                                            " dropped to " (-> % .-target .-id)))
-                                       (classes/remove (.-target %) "drag-enter")
-                                       (js/console.log (.getData (.-dataTransfer %) "text/plain"))
-                                       (re-order-fn (keyword (.getData (.-dataTransfer %) "text/plain"))
-                                                    (keyword (-> % .-target .-id)))
-                                       (.preventDefault %))}
+                    :on-drag-start  drag-start-handler
+                    :on-drag-enter  drag-enter-handler
+                    :on-drag-over   drag-over-handler
+                    :on-drag-leave  drag-leave-handler
+                    :on-drop        (partial drop-handler re-order-fn)}
    text])
 
 (defn re-order [list-item move-item before-item]
@@ -191,7 +205,6 @@
                 (= i move-item) res
                 (= i before-item) (conj res move-item before-item)
                 :else (conj res i))) [] list-item)))
-
 
 (defn drag-and-drop-list []
   (let [items (r/atom {:data {:1 "blue" :2 "red" :3 "green" :4 "black" :5 "white" :6 "purple"}
@@ -209,7 +222,6 @@
                        (render-item id (get data id) re-order-fn)) ordered-ids)))])))
 
 ;; pages -----------------------------------------------------------------------------------------
-
 
 (defn widget []
   [:div.section
