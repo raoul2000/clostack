@@ -7,7 +7,8 @@
                                        <ordered-filtered-todo-list <ordered-ids]]
             [default.todo.events :refer [>select-tab >quick-filter-update >add-todo-item
                                          >edit-todo-item >delete-todo-item >cancel-edit-todo-item
-                                         >save-edit-todo-item >toggle-done]]))
+                                         >save-edit-todo-item >toggle-done >re-order-items]]
+            [goog.dom.classlist :as classlist]))
 
 (defn quick-filter []
   [:div.panel-block
@@ -70,16 +71,47 @@
                                            :on-click >cancel-edit-todo-item}]]]])))
 
 
+(defn drag-start-handler [event]
+  ;;(js/console.log "drag start")
+  (.setData (.-dataTransfer event) "text/plain" (-> event .-target .-id))
+  (classlist/add (.-target event) "drag-start"))
+
+(defn drag-enter-handler [event]
+  (let [drop-target-element (.closest (.-target event) "[draggable='true']")]
+    (js/console.log "drag enter")
+    (js/console.log (-> event .-target))
+    (.preventDefault event)
+    (.stopPropagation event)
+    (classlist/add drop-target-element "drag-enter")
+    (js/console.log drop-target-element)))
+
+(defn drag-over-handler [event]
+  (.preventDefault event))
+
+(defn drag-leave-handler [event]
+  (js/console.log "drag leave")
+  (classlist/remove (-> event .-target) "drag-enter"))
+
+(defn drop-handler [event]
+  (let [dropped-item-id (.getData (.-dataTransfer event) "text/plain")
+        target-item-id                (.-id (.closest (.-target event) "[draggable='true']"))
+        target-item-id-1  (-> event .-target .-id)]
+    (js/console.log (str dropped-item-id " dropped to " target-item-id))
+    (classlist/remove (.-target event) "drag-enter")
+    (>re-order-items dropped-item-id target-item-id)
+    (.preventDefault event)))
+
+
 (defn render-todo-item [[id {:keys [text done]}]]
-  [:a.panel-block
-   {:class (when done "mark-done")
-    :key   id
-    :draggable "true"
-    :on-drag-start #(do
-                      (js/console.log "drag start"))
-    :on-drag #(js/console.log "drag")
-    :on-drag-end #(js/console.log "drag end")
-    :on-drag-enter #(js/console.log (-> % .-target))}
+  [:a.panel-block {:id             id
+                   :key            id
+                   :class          (when done "mark-done")
+                   :draggable      "true"
+                   :on-drag-start  drag-start-handler
+                   :on-drag-enter  drag-enter-handler
+                   :on-drag-over   drag-over-handler
+                   :on-drag-leave  drag-leave-handler
+                   :on-drop        drop-handler}
    [:span.panel-icon
     {:on-click #(>toggle-done id)}
     [:i.mdi.mdi-check {:aria-hidden "true"}]]
@@ -122,7 +154,7 @@
    [selector-tabs]
    [quick-filter]
    [:div.todo-list-container
-    (doall 
+    (doall
      (map render-todo-item (<ordered-filtered-todo-list)))]
    [action-bar]])
 

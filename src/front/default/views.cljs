@@ -200,11 +200,12 @@
 (defn re-order [list-item move-item before-item]
   (if (= move-item before-item)
     list-item
-    (reduce (fn [res i]
-              (cond
-                (= i move-item) res
-                (= i before-item) (conj res move-item before-item)
-                :else (conj res i))) [] list-item)))
+    (->> (reduce (fn [res i]
+                   (cond
+                     (= i move-item) res
+                     (= i before-item) (conj res move-item before-item)
+                     :else (conj res i))) [] list-item)
+         (apply list))))
 
 (defn drag-and-drop-list []
   (let [items (r/atom {:data {:1 "blue" :2 "red" :3 "green" :4 "black" :5 "white" :6 "purple"}

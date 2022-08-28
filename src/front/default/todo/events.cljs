@@ -168,7 +168,7 @@
     ;; a new item is added: the temp item is committed
     (-> todo-list
         (assoc new-id (-> (get todo-list todo-item-id)
-                                       (assoc :text todo-item-text)))
+                          (assoc :text todo-item-text)))
         (dissoc temp-todo-item-id))
     ;; an existing item was updated
     (update todo-list todo-item-id assoc :text todo-item-text)))
@@ -258,3 +258,29 @@
   "Load Todo list from server"
   []
   (rf/dispatch [:load-remote]))
+
+;; --------------------
+
+(defn re-order-item-ids [list-ids move-id before-id]
+  (js/console.log (str "list ids = " list-ids))
+  (js/console.log (str "move id = " move-id))
+  (js/console.log (str "before id = " before-id))
+  (if (= move-id before-id)
+    list-ids
+    (reduce (fn [res i]
+              (cond
+                (= i move-id) res
+                (= i before-id) (conj res move-id before-id)
+                :else (conj res i))) [] list-ids)))
+
+
+(defn re-order-items-handler [cofx [_ move-item-id before-item-id]]
+  (update cofx :db update-in  [:todo-widget :ordered-ids] re-order-item-ids move-item-id before-item-id))
+
+(rf/reg-event-fx
+ :re-order-items
+ [save-todo-list]
+ re-order-items-handler)
+
+(defn >re-order-items [move-item-id before-item-id]
+  (rf/dispatch [:re-order-items move-item-id before-item-id]))

@@ -134,11 +134,13 @@
   @(rf/subscribe [:filtered-todo-list]))
 
 (defn ordered-filtered-todo-list-sub [[todo-list ordered-ids]]
-  (reduce (fn [result id]
-            ;;(js/console.log (str "does " id " is in " todo-list " ?"))
-            (if (contains? todo-list id)
-              (assoc result id (get todo-list id))
-              result)) {} ordered-ids))
+  (let [lst (reduce (fn [result id]
+                      (if (contains? todo-list id)
+                        (assoc result id (get todo-list id))
+                        result)) {} ordered-ids)]
+    ;; if a map is returned, as it is not ordered, no order change will be detected 
+    ;; we must return a seq
+    (seq lst)))
 
 (rf/reg-sub :ordered-filtered-todo-list
             :<- [:filtered-todo-list]
