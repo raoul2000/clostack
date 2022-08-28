@@ -3,7 +3,8 @@
             [clojure.string :refer [blank?]]
             [default.todo.subs :refer [<selected-tab <quick-filter
                                        <editing-item-id <filtered-todo-list <load-progress
-                                       <load-error <load-error-message <save-error]]
+                                       <load-error <load-error-message <save-error
+                                       <ordered-filtered-todo-list <ordered-ids]]
             [default.todo.events :refer [>select-tab >quick-filter-update >add-todo-item
                                          >edit-todo-item >delete-todo-item >cancel-edit-todo-item
                                          >save-edit-todo-item >toggle-done]]))
@@ -121,8 +122,10 @@
    [selector-tabs]
    [quick-filter]
    [:div.todo-list-container
-    (doall (map render-todo-item (<filtered-todo-list)))]
+    (doall 
+     (map render-todo-item (<ordered-filtered-todo-list)))]
    [action-bar]])
+
 
 (defn render []
   (fn []

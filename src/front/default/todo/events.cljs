@@ -19,11 +19,13 @@
   "interceptor running after event handler to save todo-list to server"
   (rf/->interceptor {:id :save-todo-list-interc
                      :after (fn [context]       ;; applied after the db is updated
-                              (let [todo-list (get-in context [:effects :db :todo-widget :todo-list])]
+                              (let [todo-list   (get-in context [:effects :db :todo-widget :todo-list])
+                                    ordered-ids (get-in context [:effects :db :todo-widget :ordered-ids])]
                                 (update-in context [:effects] #(assoc % :http-xhrio {:method          :post
                                                                                      :uri             "/todo"
                                                                                      :format          (edn-request-format)
-                                                                                     :params          todo-list
+                                                                                     :params          {:todo-list   todo-list
+                                                                                                       :ordered-ids ordered-ids}
                                                                                      :response-format (edn-response-format)
                                                                                      :on-success      [:save-success]
                                                                                      :on-failure      [:save-error]}))))}))
@@ -33,7 +35,8 @@
 (rf/reg-event-db
  :save-success
  (fn [db [_ response]]
-   (update db :todo-widget merge {:todo-list          response
+   (update db :todo-widget merge {:todo-list          (:todo-list   response)
+                                  :ordered-ids        (:ordered-ids response)
                                   :save-progress      false
                                   :save-error         false
                                   :save-error-message nil})))
@@ -80,12 +83,12 @@
 (defn add-todo-item-handler [cofx _]
   ;; by convention, a new todo item is assigned a temporary id (see temp-todo-item-id)
   ;; until user actually saves it
-  (let [new-item-id temp-todo-item-id
-        new-item  {:text ""
+  (let [new-item  {:text ""
                    :done false}]
     {:db (-> (:db cofx)
-             (update-in [:todo-widget :todo-list]       merge {new-item-id new-item})
-             (assoc-in  [:todo-widget :editing-item-id] new-item-id)
+             (update-in [:todo-widget :todo-list]       merge {temp-todo-item-id new-item})
+             (update-in [:todo-widget :ordered-ids]     conj temp-todo-item-id)
+             (assoc-in  [:todo-widget :editing-item-id] temp-todo-item-id)
              (assoc-in  [:todo-widget :quick-filter]    "")
              (assoc-in  [:todo-widget :selected-tab]    :tab-all))
      :fx (conj (:fx cofx) [:focus-element-by-id (str "input-" temp-todo-item-id)])}))
@@ -117,7 +120,10 @@
 ;; -----------------
 
 (defn delete-todo-item [db [_ todo-item-id]]
-  (update-in db [:todo-widget :todo-list] dissoc todo-item-id))
+  (-> db
+      (update-in [:todo-widget :todo-list]   dissoc todo-item-id)
+      (update-in [:todo-widget :ordered-ids] (fn [old-ordered-ids]
+                                               (remove #{todo-item-id} old-ordered-ids)))))
 
 (rf/reg-event-db
  :delete-todo-item
@@ -149,7 +155,7 @@
 
 ;; -----------------
 
-(defn next-id 
+(defn next-id
   "Given a todo list, returns the next available id"
   [todo-list]
   (str (let [numeric-ids (map #(js/parseInt %) (keys todo-list))]
@@ -157,20 +163,31 @@
            1
            (inc (apply max numeric-ids))))))
 
-(defn  commit-edit-todo-item [todo-list todo-item-id todo-item-text]
+(defn  commit-edit-todo-item [todo-list todo-item-id todo-item-text new-id]
   (if (= temp-todo-item-id todo-item-id)
     ;; a new item is added: the temp item is committed
     (-> todo-list
-        (assoc (next-id todo-list) (-> (get todo-list todo-item-id)
+        (assoc new-id (-> (get todo-list todo-item-id)
                                        (assoc :text todo-item-text)))
         (dissoc temp-todo-item-id))
     ;; an existing item was updated
     (update todo-list todo-item-id assoc :text todo-item-text)))
 
+(defn commit-ordered-ids [ordered-ids todo-item-id new-id]
+  (if (= temp-todo-item-id todo-item-id)
+    ;; a new item is added
+    (conj (remove #{temp-todo-item-id} ordered-ids) new-id)
+    ;; an existing item was updated: ordered ids not modified
+    ordered-ids))
+
 (defn save-edit-todo-item-handler [db [_ todo-item-text]]
   (let [edited-todo-item-id (get-in   db [:todo-widget :editing-item-id])
-        updated-db          (assoc-in db [:todo-widget :editing-item-id] nil)]
-    (update-in updated-db [:todo-widget :todo-list] commit-edit-todo-item edited-todo-item-id todo-item-text)))
+        updated-db          (assoc-in db [:todo-widget :editing-item-id] nil)
+        todo-list           (get-in   db [:todo-widget :todo-list])
+        new-id              (next-id todo-list)]
+    (-> updated-db
+        (update-in [:todo-widget :todo-list]   commit-edit-todo-item edited-todo-item-id todo-item-text new-id)
+        (update-in [:todo-widget :ordered-ids] commit-ordered-ids    edited-todo-item-id new-id))))
 
 (rf/reg-event-db
  :save-edit-todo-item
@@ -202,12 +219,14 @@
   [todo-item-id]
   (rf/dispatch [:toggle-done todo-item-id]))
 
+
 ;; --------------------
 
 (rf/reg-event-db
  :load-success
  (fn [db [_ response]]
-   (update db :todo-widget merge {:todo-list          response
+   (update db :todo-widget merge {:todo-list          (:todo-list   response)
+                                  :ordered-ids        (:ordered-ids response)
                                   :load-progress      false
                                   :load-error         false
                                   :load-error-message nil})))

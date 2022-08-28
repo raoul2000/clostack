@@ -9,7 +9,7 @@
                                                      "2"   {:text  "do something else"
                                                             :done  true}}
                                  :editing-item-id     nil
-                                 :ordered-ids         [] ;; not used yet
+                                 :ordered-ids         '(2 1) ;; not used yet
                                  :quick-filter        ""
                                  :selected-tab        :tab-all
                                  :load-progress       false
@@ -17,13 +17,14 @@
                                  :load-error-message  "invalid address in header"
                                  :save-progress       false
                                  :save-error          true
-                                 :save-error-message  "some error occured"}})
+                                 :save-error-message  "some error occured"
+                                 :version             -1}})
 
 (defn create-initial-state []
   (>load-remote)
-  {:todo-widget {:todo-list         {}
+  {:todo-widget {:todo-list           {}
                  :editing-item-id     nil
-                 :ordered-ids         [] ;; not used yet
+                 :ordered-ids         '() ;; not used yet
                  :quick-filter        ""
                  :selected-tab        :tab-all
                  :load-progress       false
@@ -31,7 +32,8 @@
                  :load-error-message  ""
                  :save-progress       false
                  :save-error          false
-                 :save-error-message  ""}})
+                 :save-error-message  ""
+                 :version             -1}})
 
 ;; layer 2 ------------------------------------------------------
 
@@ -85,6 +87,13 @@
 (defn <load-error-message []
   @(rf/subscribe [:load-error-message]))
 
+(rf/reg-sub :ordered-ids
+            (fn [db _]
+              (get-in db [:todo-widget :ordered-ids])))
+
+(defn <ordered-ids []
+  @(rf/subscribe [:ordered-ids]))
+
 ;; -------------------------------
 
 (rf/reg-sub :save-error
@@ -105,23 +114,36 @@
 
 ;; layer 3 -------------------------------------------------
 
+(defn filtered-todo-list-subs [[todo-list filter-text selected-tab] _]
+  (cond-> todo-list
+    (not= "" filter-text)      (->> (filter #(includes? (lower-case (trim (get (second %) :text)))
+                                                        (lower-case (trim filter-text))))
+                                    (into {}))
+    (= selected-tab :tab-todo) (->> (filter #(not (get (second %) :done)))
+                                    (into {}))
+    (= selected-tab :tab-done) (->> (filter #(get (second %) :done))
+                                    (into {}))))
 
 (rf/reg-sub :filtered-todo-list
             :<- [:todo-list]
             :<- [:quick-filter]
             :<- [:selected-tab]
-            (fn [[todo-list filter-text selected-tab] _]
-              (cond-> todo-list
-                (not= "" filter-text)       (->> ,,,
-                                             (filter #(includes? (lower-case (trim (get (second %) :text))) 
-                                                                 (lower-case (trim filter-text))))
-                                             (into {}))
-                (= selected-tab :tab-todo) (->> ,,,
-                                            (filter #(not (get (second %) :done)))
-                                            (into {}))
-                (= selected-tab :tab-done) (->> ,,,
-                                            (filter #(get (second %) :done))
-                                            (into {})))))
+            filtered-todo-list-subs)
 
 (defn <filtered-todo-list []
   @(rf/subscribe [:filtered-todo-list]))
+
+(defn ordered-filtered-todo-list-sub [[todo-list ordered-ids]]
+  (reduce (fn [result id]
+            ;;(js/console.log (str "does " id " is in " todo-list " ?"))
+            (if (contains? todo-list id)
+              (assoc result id (get todo-list id))
+              result)) {} ordered-ids))
+
+(rf/reg-sub :ordered-filtered-todo-list
+            :<- [:filtered-todo-list]
+            :<- [:ordered-ids]
+            ordered-filtered-todo-list-sub)
+
+(defn <ordered-filtered-todo-list []
+  @(rf/subscribe [:ordered-filtered-todo-list]))
