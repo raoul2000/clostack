@@ -1,6 +1,11 @@
 # Clostack :  Fullstack App Boilerplate
 
-Clojure/script web application in a single *jar* file.
+TLDR: Clojure/script web application in a single *jar* file.
+
+## Rationale
+
+The first goal of this project is *self* educational. In other words, it's an attempt to explore some of the features available in the clojure(script) world of webapp, from the back to the front end. Next was the idea to provide a single *jar* file, easy to invoke, that would provide a set of reusable examples illustrating various aspects composing a webapp. From this *boilerplate* is should be quite simple to implement your/my next idea
+Last, I just wanted to have fun playing with clojure...
 
 ## Requirements
 
