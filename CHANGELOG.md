@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
+## [unreleased]
+### Added
+- Front
+  - drag and drop widget
+  - todo-widget: support ordering via drag and drop
+
 ## [0.0.4]
 ### Added
 - Front

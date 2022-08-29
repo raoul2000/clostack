@@ -88,17 +88,20 @@ html,body {
 }
 
 /* drag and drop styles ---------------------- */
-.panel .panel-block.drag-start {
-  /*background-color: aqua;*/
-  /*border:1px solid black;*/
-}
+
 .panel .panel-block.drag-enter {  
-  /*background-color: green;*/
   border-top-color: rgb(140, 140, 140);
 }
-
 .panel .panel-block {
-  border-top:1px solid white;
+  border-top:1px dotted white;
+}
+/* 
+ this is the trick to handler enter + leave events fired when entering child element (todo-widget)
+ see https://stackoverflow.com/questions/7110353/html5-dragleave-fired-when-hovering-a-child-element
+ see https://developer.mozilla.org/fr/docs/Web/CSS/pointer-events
+*/
+.drag-enter * {
+  pointer-events: none;
 }
 
 

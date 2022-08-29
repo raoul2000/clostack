@@ -2,9 +2,9 @@
   (:require [reagent.core :as r]
             [clojure.string :refer [blank?]]
             [default.todo.subs :refer [<selected-tab <quick-filter
-                                       <editing-item-id <filtered-todo-list <load-progress
+                                       <editing-item-id <load-progress
                                        <load-error <load-error-message <save-error
-                                       <ordered-filtered-todo-list <ordered-ids]]
+                                       <ordered-filtered-todo-list]]
             [default.todo.events :refer [>select-tab >quick-filter-update >add-todo-item
                                          >edit-todo-item >delete-todo-item >cancel-edit-todo-item
                                          >save-edit-todo-item >toggle-done >re-order-items]]
@@ -63,44 +63,37 @@
        [:div.is-flex.is-justify-content-flex-end
         [:span.panel-icon.todo-action.todo-action-save
          [:i.mdi.mdi-check-circle-outline {:aria-hidden "true"
-                                           :title "save"
-                                           :on-click #(>save-edit-todo-item @input-text)}]]
+                                           :title       "save"
+                                           :on-click    #(>save-edit-todo-item @input-text)}]]
         [:span.panel-icon.todo-action.todo-action-cancel
          [:i.mdi.mdi-close-circle-outline {:aria-hidden "true"
-                                           :title "cancel"
-                                           :on-click >cancel-edit-todo-item}]]]])))
-
+                                           :title       "cancel"
+                                           :on-click    >cancel-edit-todo-item}]]]])))
 
 (defn drag-start-handler [event]
-  ;;(js/console.log "drag start")
   (.setData (.-dataTransfer event) "text/plain" (-> event .-target .-id))
   (classlist/add (.-target event) "drag-start"))
 
 (defn drag-enter-handler [event]
   (let [drop-target-element (.closest (.-target event) "[draggable='true']")]
-    (js/console.log "drag enter")
-    (js/console.log (-> event .-target))
     (.preventDefault event)
     (.stopPropagation event)
-    (classlist/add drop-target-element "drag-enter")
-    (js/console.log drop-target-element)))
+    (classlist/add drop-target-element "drag-enter")))
 
 (defn drag-over-handler [event]
   (.preventDefault event))
 
 (defn drag-leave-handler [event]
-  (js/console.log "drag leave")
+  (.stopPropagation event)
+  (.preventDefault event)
   (classlist/remove (-> event .-target) "drag-enter"))
 
 (defn drop-handler [event]
   (let [dropped-item-id (.getData (.-dataTransfer event) "text/plain")
-        target-item-id                (.-id (.closest (.-target event) "[draggable='true']"))
-        target-item-id-1  (-> event .-target .-id)]
-    (js/console.log (str dropped-item-id " dropped to " target-item-id))
+        target-item-id  (.-id (.closest (.-target event) "[draggable='true']"))]
     (classlist/remove (.-target event) "drag-enter")
     (>re-order-items dropped-item-id target-item-id)
     (.preventDefault event)))
-
 
 (defn render-todo-item [[id {:keys [text done]}]]
   [:a.panel-block {:id             id
@@ -157,7 +150,6 @@
     (doall
      (map render-todo-item (<ordered-filtered-todo-list)))]
    [action-bar]])
-
 
 (defn render []
   (fn []
