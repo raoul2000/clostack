@@ -13,7 +13,8 @@
 
 (s/def :todo/todo-list   (s/map-of :todo/id :todo/item))
 (s/def :todo/ordered-ids (s/coll-of :todo/id
-                                    :kind     vector?    ;; preserve order
+                                    :kind     list?    ;; preserve order
                                     :distinct true))
 
 (s/def :todo/db (s/keys :req-un [:todo/todo-list :todo/ordered-ids]))
+

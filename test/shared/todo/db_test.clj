@@ -14,9 +14,12 @@
 
 (deftest create-test
   (testing "creating an empty db"
-    (is (= {:todo-list {}
-            :ordered-ids []}
-           (db/create)))))
+    (let [new-db (db/create)]
+      (is (list? (:ordered-ids new-db)) "ordered-ids should be a list")
+      (is (map?  (:todo-list new-db))   "todo-list should be a map")
+      (is (= {:todo-list {}
+              :ordered-ids '()}
+             new-db)))))
 
 (deftest add-item-to-list-test
 
@@ -25,23 +28,23 @@
            (db/add-item-to-list {} "id1" (db/create-todo-item "description" false)))))
 
   (testing "adding todo item to non empty todo list"
-      (is (= {"id1" #:todo{:text "description", 
-                           :done false},
-              "id2" #:todo{:text "another text", 
-                           :done true}}
-             (db/add-item-to-list {"id1" #:todo{:text "description", 
-                                                :done false}}
-                                  "id2" 
-                                  (db/create-todo-item "another text" true)))))
+    (is (= {"id1" #:todo{:text "description",
+                         :done false},
+            "id2" #:todo{:text "another text",
+                         :done true}}
+           (db/add-item-to-list {"id1" #:todo{:text "description",
+                                              :done false}}
+                                "id2"
+                                (db/create-todo-item "another text" true)))))
 
-  (testing "adding todo item for existing id in the todo list" 
-      (is (= {"id1" #:todo{:text "another text"
-                           :done true}}
-             
-             (db/add-item-to-list {"id1" #:todo{:text "description"
-                                                :done false}}
-                                  "id1" 
-                                  (db/create-todo-item "another text" true))))))
+  (testing "adding todo item for existing id in the todo list"
+    (is (= {"id1" #:todo{:text "another text"
+                         :done true}}
+
+           (db/add-item-to-list {"id1" #:todo{:text "description"
+                                              :done false}}
+                                "id1"
+                                (db/create-todo-item "another text" true))))))
 
 (deftest delete-item-from-list-test
   (testing "removing item from todo list"
@@ -59,3 +62,42 @@
 
   (testing "removing item from an empty list returns empty list"
     (is (empty? (db/delete-item-from-list {} "id")))))
+
+(deftest add-item-to-db-test
+  (testing "add a todo item to an empty db successfully"
+    (is (= {:todo-list   {"id1" #:todo{:text "description"
+                                       :done false}}
+            :ordered-ids '("id1")}
+           (db/add-item {:todo-list   {}
+                         :ordered-ids '()}
+                        "id1"
+                        (db/create-todo-item "description" false)))))
+
+  (testing "add a todo item to an non-empty db successfully"
+    (is (= {:todo-list
+            {"id1" #:todo{:text "description"
+                          :done false}
+             "id2" #:todo{:text "description"
+                          :done false}}
+            :ordered-ids '("id2" "id1")}
+
+           (db/add-item {:todo-list   {"id1" #:todo{:text "description"
+                                                    :done false}}
+                         :ordered-ids '("id1")}
+                        "id2"
+                        (db/create-todo-item "description" false)))))
+
+  (testing "add duplicate todo item does not change db"
+    (is (= {:todo-list    {"id1" #:todo{:text "description"
+                                        :done false}
+                           "id2" #:todo{:text "description"
+                                        :done false}}
+            :ordered-ids '("id2" "id1")}
+
+           (db/add-item {:todo-list    {"id1" #:todo{:text "description"
+                                                     :done false}
+                                        "id2" #:todo{:text "description"
+                                                     :done false}}
+                         :ordered-ids '("id2" "id1")}
+                        "id2"
+                        (db/create-todo-item "description" false))))))
