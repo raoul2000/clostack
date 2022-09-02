@@ -1,7 +1,7 @@
 (ns todo.db-test
   (:require [todo.db :as db]
             [clojure.spec.alpha :as s]
-            [clojure.test :refer [deftest is testing]]))
+            [clojure.test :refer [deftest is are testing]]))
 
 (deftest creation-test
   (testing "create-todo-item when success"
@@ -101,3 +101,28 @@
                          :ordered-ids '("id2" "id1")}
                         "id2"
                         (db/create-todo-item "description" false))))))
+
+(deftest delete-item-test
+  (testing "delete item from db"
+    (let [db  {:todo-list    {"id1" #:todo{:text "description"
+                                           :done false}
+                              "id2" #:todo{:text "description"
+                                           :done false}}
+               :ordered-ids '("id2" "id1")}
+          updated-db (db/delete-item db "id1")]
+      (is (nil? (get-in updated-db [:todo-list "id1"])))
+      (is (= #:todo{:text "description"
+                    :done false}
+             (get-in updated-db [:todo-list "id2"])))
+
+      (is (empty? (filter #{"id1"} (:ordered-ids updated-db))))
+      (is (= ["id2"] (:ordered-ids updated-db)))))
+
+  (testing "deleting item not present in db"
+    (let [db  {:todo-list    {"id1" #:todo{:text "description"
+                                           :done false}
+                              "id2" #:todo{:text "description"
+                                           :done false}}
+               :ordered-ids '("id2" "id3")}
+          updated-db (db/delete-item db "id5")]
+      (is (= db updated-db)))))
