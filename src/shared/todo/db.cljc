@@ -68,3 +68,68 @@
       (update :todo-list dissoc item-id)
       (update :ordered-ids #(remove #{item-id} %))))
 
+(defn  commit-edit-todo-item [todo-list todo-item-id todo-item new-item-id]
+  (if (= temporary-item-id todo-item-id)
+    ;; a new item is added: the temp item is committed
+    (-> todo-list
+        (assoc  new-item-id todo-item)
+        (dissoc temporary-item-id))
+    ;; an existing item was updated
+    (assoc todo-list todo-item-id todo-item)))
+
+(defn commit-ordered-ids [ordered-ids todo-item-id new-id]
+  (if (= temporary-item-id todo-item-id)
+    ;; a new item is added
+    (map #(if (= temporary-item-id %) new-id %) ordered-ids)
+    ;; an existing item was updated: ordered ids not modified
+    ordered-ids))
+
+(defn commit-todo-item [db todo-id todo-item]
+ {:pre [(s/valid? :todo/db db)
+        (s/valid? :todo/id  todo-id)
+        (s/valid? :todo/item todo-item)]
+  :post [(do 
+           (prn (:ordered-ids %))
+           (s/explain :todo/db %)
+           
+           (s/valid? :todo/db %)
+           
+           )]
+  }
+  (let [new-item-id (new-id)]
+    (-> db
+        (update :todo-list   commit-edit-todo-item todo-id todo-item new-item-id)
+        (update :ordered-ids commit-ordered-ids    todo-id new-item-id))))
+
+(comment
+ 
+  (s/valid? :todo/item #:todo{:text "descr1"    :done false})
+  (s/valid? :todo/todo-list {"e" #:todo{:text "descr1"    :done false}
+                             "b" #:todo{:text "descr1"    :done false}})
+
+  (s/explain :todo/db {:todo-list {"id1"            #:todo{:text "descr1"    :done false}
+                                   temporary-item-id #:todo{:text "descr tmp" :done false}}
+                       :ordered-ids (list "id1" temporary-item-id)})
+
+
+  (commit-todo-item {:todo-list {"id1"              #:todo{:text "descr1"    :done false}
+                                 temporary-item-id  #:todo{:text "descr tmp" :done false}}
+                     :ordered-ids (list "id1" temporary-item-id)}
+                    temporary-item-id
+                    #:todo{:text "updated tmp"
+                           :done true})
+
+  (s/valid? :todo/db {:todo-list
+                      {"id1" #:todo{:text "descr1", :done false},
+                       "4a701cbd-d8f7-4dff-8485-75f068ea1b94" #:todo{:text "updated tmp", :done true}},
+                      :ordered-ids '("id1" "4a701cbd-d8f7-4dff-8485-75f068ea1b94")})
+  
+    (commit-todo-item {:todo-list {"id1"  #:todo{:text "descr1"    :done false}
+                                   "id2"  #:todo{:text "descr tmp" :done false}}
+                       :ordered-ids (list "id2" "id1")}
+                      "id2"
+                      #:todo{:text "updated tmp"
+                             :done true})
+  
+  ;;
+  )

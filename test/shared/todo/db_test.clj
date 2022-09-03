@@ -110,13 +110,13 @@
                                            :done false}}
                :ordered-ids '("id2" "id1")}
           updated-db (db/delete-item db "id1")]
-      (is (nil? (get-in updated-db [:todo-list "id1"])))
+      (is (nil? (get-in updated-db [:todo-list "id1"])) "id1 is not in the todo-list map anymore")
       (is (= #:todo{:text "description"
                     :done false}
-             (get-in updated-db [:todo-list "id2"])))
+             (get-in updated-db [:todo-list "id2"]))    "remaining item is unchanged")
 
-      (is (empty? (filter #{"id1"} (:ordered-ids updated-db))))
-      (is (= ["id2"] (:ordered-ids updated-db)))))
+      (is (empty? (filter #{"id1"} (:ordered-ids updated-db))) "id1 is not in the ordered id list anymore")
+      (is (= ["id2"] (:ordered-ids updated-db))                "remaining ids are unchanged in the ordered id list")))
 
   (testing "deleting item not present in db"
     (let [db  {:todo-list    {"id1" #:todo{:text "description"
@@ -125,4 +125,41 @@
                                            :done false}}
                :ordered-ids '("id2" "id3")}
           updated-db (db/delete-item db "id5")]
-      (is (= db updated-db)))))
+      (is (= db updated-db) "db is unchanged"))))
+
+(deftest commit-edit-todo-item-test
+  (testing "commit editing an existing item"
+    (is (= {"id1" {:text "updated 1"
+                   :done true}
+            "id2" {:text "text2"
+                   :done true}}
+           (db/commit-edit-todo-item {"id1" {:text "text1"
+                                             :done false}
+                                      "id2" {:text "text2"
+                                             :done true}}
+                                     "id1"
+                                     {:text "updated 1"
+                                      :done true}
+                                     "new-id"))))
+  (testing "commit a new item"
+    (is (= {"id1" {:text "text1"
+                   :done false}
+            "new-id" {:text "updated 2"
+                      :done true}}
+           (db/commit-edit-todo-item {"id1"                {:text "text1"
+                                                            :done false}
+                                      db/temporary-item-id {:text "text2"
+                                                            :done true}}
+                                     db/temporary-item-id
+                                     {:text "updated 2"
+                                      :done true}
+                                     "new-id")))))
+
+(deftest commit-ordered-ids-test
+  (testing "commit edit existing item"
+    (is (= '("id1" "id2" "new-id" "id3")
+           (db/commit-ordered-ids (list "id1" "id2" db/temporary-item-id "id3") db/temporary-item-id "new-id"))))
+
+  (testing "commit a new item"
+    (is (= '("id1" "id2" "id3")
+           (db/commit-ordered-ids (list "id1" "id2" "id3") "id2" "new-id")))))
