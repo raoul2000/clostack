@@ -53,7 +53,7 @@
    If *id* already exists the *db* is returns unchanged.
    "
   [db item-id item]
-  {:pre [(s/valid? :todo/db db)
+  {:pre [(s/valid? :todo/db  db)
          (s/valid? :todo/id  item-id)]
    :post [(s/valid? :todo/db %)]}
   (cond-> db
@@ -85,24 +85,22 @@
     ordered-ids))
 
 (defn commit-todo-item [db todo-id todo-item]
- {:pre [(s/valid? :todo/db db)
-        (s/valid? :todo/id  todo-id)
-        (s/valid? :todo/item todo-item)]
-  :post [(do 
-           (prn (:ordered-ids %))
-           (s/explain :todo/db %)
-           
-           (s/valid? :todo/db %)
-           
-           )]
-  }
+  {:pre [(s/valid? :todo/db    db)
+         (s/valid? :todo/id    todo-id)
+         (s/valid? :todo/item  todo-item)]
+   :post [(do
+            (prn (:ordered-ids %))
+            (s/explain :todo/db %)
+
+            (s/valid? :todo/db %))]
+   }
   (let [new-item-id (new-id)]
     (-> db
         (update :todo-list   commit-edit-todo-item todo-id todo-item new-item-id)
         (update :ordered-ids commit-ordered-ids    todo-id new-item-id))))
 
 (comment
- 
+
   (s/valid? :todo/item #:todo{:text "descr1"    :done false})
   (s/valid? :todo/todo-list {"e" #:todo{:text "descr1"    :done false}
                              "b" #:todo{:text "descr1"    :done false}})
@@ -112,9 +110,14 @@
                        :ordered-ids (list "id1" temporary-item-id)})
 
 
+  (list? (list "id1" temporary-item-id))
+  (list? '( "id1" temporary-item-id))
+  (identity '("id1" 'temporary-item-id))
+
+  (def list1 (list "id1" temporary-item-id))
   (commit-todo-item {:todo-list {"id1"              #:todo{:text "descr1"    :done false}
                                  temporary-item-id  #:todo{:text "descr tmp" :done false}}
-                     :ordered-ids (list "id1" temporary-item-id)}
+                     :ordered-ids list1}
                     temporary-item-id
                     #:todo{:text "updated tmp"
                            :done true})
@@ -123,13 +126,22 @@
                       {"id1" #:todo{:text "descr1", :done false},
                        "4a701cbd-d8f7-4dff-8485-75f068ea1b94" #:todo{:text "updated tmp", :done true}},
                       :ordered-ids '("id1" "4a701cbd-d8f7-4dff-8485-75f068ea1b94")})
+
+  (commit-todo-item {:todo-list {"id1"  #:todo{:text "descr1"    :done false}
+                                 "id2"  #:todo{:text "descr tmp" :done false}}
+                     :ordered-ids (list "id2" "id1")}
+                    "id2"
+                    #:todo{:text "updated tmp"
+                           :done true})
+
   
-    (commit-todo-item {:todo-list {"id1"  #:todo{:text "descr1"    :done false}
-                                   "id2"  #:todo{:text "descr tmp" :done false}}
-                       :ordered-ids (list "id2" "id1")}
-                      "id2"
-                      #:todo{:text "updated tmp"
-                             :done true})
-  
+
+  (commit-todo-item {:todo-list    {"id1" #:todo{:text "description"
+                                                    :done false}
+                                       "id2" #:todo{:text "description"
+                                                    :done false}}
+                        :ordered-ids '("id2" "id1")}
+                       "id2"
+                       (create-todo-item "description" false))
   ;;
   )

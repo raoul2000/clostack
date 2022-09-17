@@ -1,7 +1,7 @@
 (ns todo.db-test
   (:require [todo.db :as db]
             [clojure.spec.alpha :as s]
-            [clojure.test :refer [deftest is are testing]]))
+            [clojure.test :refer [deftest is testing]]))
 
 (deftest creation-test
   (testing "create-todo-item when success"
@@ -163,3 +163,15 @@
   (testing "commit a new item"
     (is (= '("id1" "id2" "id3")
            (db/commit-ordered-ids (list "id1" "id2" "id3") "id2" "new-id")))))
+
+(deftest commit-todo-item-test
+  (testing "commit a todo item"
+    (is (= {:a 1}
+           (db/commit-todo-item {:todo-list    {"id1" #:todo{:text "description"
+                                                             :done false}
+                                                "id2" #:todo{:text "description"
+                                                             :done false}}
+                                 :ordered-ids '("id2" "id1")}
+                                 "id2"
+                                {:text "updated 2"
+                                 :done true})))))
