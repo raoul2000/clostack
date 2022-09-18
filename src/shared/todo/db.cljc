@@ -80,7 +80,7 @@
 (defn commit-ordered-ids [ordered-ids todo-item-id new-id]
   (if (= temporary-item-id todo-item-id)
     ;; a new item is added
-    (map #(if (= temporary-item-id %) new-id %) ordered-ids)
+    (doall (map #(if (= temporary-item-id %) new-id %) ordered-ids))
     ;; an existing item was updated: ordered ids not modified
     ordered-ids))
 
@@ -89,11 +89,10 @@
          (s/valid? :todo/id    todo-id)
          (s/valid? :todo/item  todo-item)]
    :post [(do
-            (prn (:ordered-ids %))
-            (s/explain :todo/db %)
+            ;;(prn (:ordered-ids %))
+            ;;(s/explain :todo/db %)
 
-            (s/valid? :todo/db %))]
-   }
+            (s/valid? :todo/db %))]}
   (let [new-item-id (new-id)]
     (-> db
         (update :todo-list   commit-edit-todo-item todo-id todo-item new-item-id)
@@ -111,7 +110,7 @@
 
 
   (list? (list "id1" temporary-item-id))
-  (list? '( "id1" temporary-item-id))
+  (list? '("id1" temporary-item-id))
   (identity '("id1" 'temporary-item-id))
 
   (def list1 (list "id1" temporary-item-id))
@@ -119,29 +118,69 @@
                                  temporary-item-id  #:todo{:text "descr tmp" :done false}}
                      :ordered-ids list1}
                     temporary-item-id
-                    #:todo{:text "updated tmp"
-                           :done true})
+                    (create-todo-item "description" false))
+
+
 
   (s/valid? :todo/db {:todo-list
                       {"id1" #:todo{:text "descr1", :done false},
                        "4a701cbd-d8f7-4dff-8485-75f068ea1b94" #:todo{:text "updated tmp", :done true}},
                       :ordered-ids '("id1" "4a701cbd-d8f7-4dff-8485-75f068ea1b94")})
 
-  (commit-todo-item {:todo-list {"id1"  #:todo{:text "descr1"    :done false}
-                                 "id2"  #:todo{:text "descr tmp" :done false}}
-                     :ordered-ids (list "id2" "id1")}
-                    "id2"
-                    #:todo{:text "updated tmp"
-                           :done true})
 
+  (list? (:ordered-ids (commit-todo-item {:todo-list {"id1"  #:todo{:text "descr1"    :done false}
+                                                      "id2"  #:todo{:text "descr tmp" :done false}}
+                                          :ordered-ids (list "id2" "id1")}
+                                         "id2"
+                                         #:todo{:text "updated tmp"
+                                                :done true})))
+
+
+
+  (list? (:ordered-ids (commit-todo-item {:todo-list    {"id1" #:todo{:text "description"
+                                                                      :done false}
+                                                         "id2" #:todo{:text "description"
+                                                                      :done false}}
+                                          :ordered-ids (list "id2" temporary-item-id)}
+                                         temporary-item-id
+                                         (create-todo-item "description" false))))
+
+
+  (defn do-list [m]
+    (update m :l (partial remove  #(= % temporary-item-id))))
   
+  (defn do-list2 [m]
+    (let [filter-fn (fn [cur-m] (doall (remove #(= % temporary-item-id) cur-m)))]
+      (doall (update m :l filter-fn))))
 
-  (commit-todo-item {:todo-list    {"id1" #:todo{:text "description"
-                                                    :done false}
-                                       "id2" #:todo{:text "description"
-                                                    :done false}}
-                        :ordered-ids '("id2" "id1")}
-                       "id2"
-                       (create-todo-item "description" false))
+  (let [res (do-list2 {:l (list "a" temporary-item-id)})
+        lst (:l res)]
+    (println res)
+    (println (:l res))
+    (println (list? (:l res)))
+    (println (seq? (:l res)))
+    (println (type (:l res)))
+    (type lst)
+    
+    )
+  
+  (list? (:l (do-list {:l (list "a" temporary-item-id)})))
+
+
+  ;; create the initial list
+  (def l1 '(:a :b :c))
+  (type l1) ;; clojure.lang.PersistentList
+  (list? l1) ;; true
+
+  ;; apply filter to create the derived list
+  (def l2 (remove (partial = :a) l1))
+  (type l2) ;; clojure.lang.LazySeq
+  (list? l2) ;; false
+
+  ;; try to force evaluation
+  (def l3  (remove (partial = :a) l1))
+  (type (doall l3))
+  (list? (doall l3))
+
   ;;
   )
