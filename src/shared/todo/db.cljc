@@ -88,11 +88,7 @@
   {:pre [(s/valid? :todo/db    db)
          (s/valid? :todo/id    todo-id)
          (s/valid? :todo/item  todo-item)]
-   :post [(do
-            ;;(prn (:ordered-ids %))
-            ;;(s/explain :todo/db %)
-
-            (s/valid? :todo/db %))]}
+   :post [(s/valid? :todo/db %)]}
   (let [new-item-id (new-id)]
     (-> db
         (update :todo-list   commit-edit-todo-item todo-id todo-item new-item-id)
@@ -148,7 +144,7 @@
 
   (defn do-list [m]
     (update m :l (partial remove  #(= % temporary-item-id))))
-  
+
   (defn do-list2 [m]
     (let [filter-fn (fn [cur-m] (doall (remove #(= % temporary-item-id) cur-m)))]
       (doall (update m :l filter-fn))))
@@ -160,10 +156,8 @@
     (println (list? (:l res)))
     (println (seq? (:l res)))
     (println (type (:l res)))
-    (type lst)
-    
-    )
-  
+    (type lst))
+
   (list? (:l (do-list {:l (list "a" temporary-item-id)})))
 
 
@@ -179,8 +173,10 @@
 
   ;; try to force evaluation
   (def l3  (remove (partial = :a) l1))
+  l3
   (type (doall l3))
   (list? (doall l3))
+  (seq? (doall l3))
 
   ;;
   )
