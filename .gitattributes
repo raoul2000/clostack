@@ -1,0 +1,11 @@
+* text=auto
+
+*.clj           eol=lf
+*.cljs          eol=lf
+*.cljc          eol=lf
+*.js            eol=lf
+*.md            eol=lf
+*.edn           eol=lf
+*.xml           eol=lf
+*.html          eol=lf
+*.json          eol=lf
