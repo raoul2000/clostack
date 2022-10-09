@@ -169,9 +169,8 @@
     (is (= {:a 1}
            (db/commit-todo-item {:todo-list    {"id1" #:todo{:text "description"
                                                              :done false}
-                                                "id2" #:todo{:text "description"
-                                                             :done false}}
-                                 :ordered-ids '("id2" "id1")}
-                                 "id2"
-                                {:text "updated 2"
-                                 :done true})))))
+                                                db/temporary-item-id  #:todo{:text "description"
+                                                                             :done false}}
+                                 :ordered-ids (list "id1"  db/temporary-item-id)}
+                                "new-id2"
+                                (db/create-todo-item "update 2" false))))))
