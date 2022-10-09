@@ -50,4 +50,5 @@ node_modules/
 .shadow-cljs/
 resources/public/js
 out
+.lsp
 
