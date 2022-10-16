@@ -1,6 +1,8 @@
 (ns todo.db-test
   (:require [todo.db :as db]
+            [todo.spec :as spectodo]
             [clojure.spec.alpha :as s]
+
             [clojure.test :refer [deftest is testing]]))
 
 (deftest creation-test
