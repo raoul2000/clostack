@@ -6,20 +6,18 @@
 (deftest creation-test
   (testing "create-todo-item when success"
     (is (= #:todo{:text "description", :done false}
-           (db/create-todo-item "description" false))))
+           (db/create-todo-item "description" false)))))
 
-  (testing "create-todo-list when success"
-    (is (= {}
-           (db/create-todo-list)))))
 
 (deftest create-test
   (testing "creating an empty db"
     (let [new-db (db/create)]
-      (is (list? (:ordered-ids new-db)) "ordered-ids should be a list")
-      (is (map?  (:todo-list new-db))   "todo-list should be a map")
-      (is (= {:todo-list {}
-              :ordered-ids '()}
+      (is (coll? (:todo/ordered-ids new-db)))
+      (is (map?  (:todo/list new-db)))
+      (is (= {:todo/list {}
+              :todo/ordered-ids '()}
              new-db)))))
+
 
 (deftest add-item-to-list-test
 
@@ -46,6 +44,9 @@
                                 "id1"
                                 (db/create-todo-item "another text" true))))))
 
+
+
+
 (deftest delete-item-from-list-test
   (testing "removing item from todo list"
     (is (= {"id2" #:todo{:text "another text", :done true}}
@@ -63,69 +64,79 @@
   (testing "removing item from an empty list returns empty list"
     (is (empty? (db/delete-item-from-list {} "id")))))
 
+
+
+
 (deftest add-item-to-db-test
   (testing "add a todo item to an empty db successfully"
-    (is (= {:todo-list   {"id1" #:todo{:text "description"
+    (is (= {:todo/list   {"id1" #:todo{:text "description"
                                        :done false}}
-            :ordered-ids '("id1")}
-           (db/add-item {:todo-list   {}
-                         :ordered-ids '()}
+            :todo/ordered-ids '("id1")}
+           (db/add-item {:todo/list   {}
+                         :todo/ordered-ids '()}
                         "id1"
                         (db/create-todo-item "description" false)))))
 
   (testing "add a todo item to an non-empty db successfully"
-    (is (= {:todo-list
+    (is (= {:todo/list
             {"id1" #:todo{:text "description"
                           :done false}
              "id2" #:todo{:text "description"
                           :done false}}
-            :ordered-ids '("id2" "id1")}
+            :todo/ordered-ids '("id2" "id1")}
 
-           (db/add-item {:todo-list   {"id1" #:todo{:text "description"
+           (db/add-item {:todo/list   {"id1" #:todo{:text "description"
                                                     :done false}}
-                         :ordered-ids '("id1")}
+                         :todo/ordered-ids '("id1")}
                         "id2"
                         (db/create-todo-item "description" false)))))
 
   (testing "add duplicate todo item does not change db"
-    (is (= {:todo-list    {"id1" #:todo{:text "description"
+    (is (= {:todo/list    {"id1" #:todo{:text "description"
                                         :done false}
                            "id2" #:todo{:text "description"
                                         :done false}}
-            :ordered-ids '("id2" "id1")}
+            :todo/ordered-ids '("id2" "id1")}
 
-           (db/add-item {:todo-list    {"id1" #:todo{:text "description"
+           (db/add-item {:todo/list    {"id1" #:todo{:text "description"
                                                      :done false}
                                         "id2" #:todo{:text "description"
                                                      :done false}}
-                         :ordered-ids '("id2" "id1")}
+                         :todo/ordered-ids '("id2" "id1")}
                         "id2"
                         (db/create-todo-item "description" false))))))
 
+
+
+
+
 (deftest delete-item-test
   (testing "delete item from db"
-    (let [db  {:todo-list    {"id1" #:todo{:text "description"
+    (let [db  {:todo/list    {"id1" #:todo{:text "description"
                                            :done false}
                               "id2" #:todo{:text "description"
                                            :done false}}
-               :ordered-ids '("id2" "id1")}
+               :todo/ordered-ids '("id2" "id1")}
           updated-db (db/delete-item db "id1")]
-      (is (nil? (get-in updated-db [:todo-list "id1"])) "id1 is not in the todo-list map anymore")
+      (is (nil? (get-in updated-db [:todo/list "id1"])) "id1 is not in the todo-list map anymore")
       (is (= #:todo{:text "description"
                     :done false}
-             (get-in updated-db [:todo-list "id2"]))    "remaining item is unchanged")
+             (get-in updated-db [:todo/list "id2"]))    "remaining item is unchanged")
 
-      (is (empty? (filter #{"id1"} (:ordered-ids updated-db))) "id1 is not in the ordered id list anymore")
-      (is (= ["id2"] (:ordered-ids updated-db))                "remaining ids are unchanged in the ordered id list")))
+      (is (empty? (filter #{"id1"} (:todo/ordered-ids updated-db))) "id1 is not in the ordered id list anymore")
+      (is (= ["id2"] (:todo/ordered-ids updated-db))                "remaining ids are unchanged in the ordered id list")))
 
   (testing "deleting item not present in db"
-    (let [db  {:todo-list    {"id1" #:todo{:text "description"
+    (let [db  {:todo/list    {"id1" #:todo{:text "description"
                                            :done false}
                               "id2" #:todo{:text "description"
                                            :done false}}
-               :ordered-ids '("id2" "id3")}
+               :todo/ordered-ids '("id2" "id3")}
           updated-db (db/delete-item db "id5")]
       (is (= db updated-db) "db is unchanged"))))
+
+
+
 
 (deftest commit-edit-todo-item-test
   (testing "commit editing an existing item"
@@ -155,6 +166,9 @@
                                       :done true}
                                      "new-id")))))
 
+
+
+
 (deftest commit-ordered-ids-test
   (testing "commit edit existing item"
     (is (= '("id1" "id2" "new-id" "id3")
@@ -164,13 +178,19 @@
     (is (= '("id1" "id2" "id3")
            (db/commit-ordered-ids (list "id1" "id2" "id3") "id2" "new-id")))))
 
+
+
+
 (deftest commit-todo-item-test
   (testing "commit a todo item"
-    (is (= {:a 1}
-           (db/commit-todo-item {:todo-list    {"id1" #:todo{:text "description"
+    (is (= #:todo{:list         {"id1"     #:todo{:text "description", :done false},
+                                 "tmp-id"  #:todo{:text "description", :done false},
+                                 "new-id2" #:todo{:text "update 2", :done false}},
+                  :ordered-ids '("id1" "tmp-id")}
+           (db/commit-todo-item {:todo/list    {"id1" #:todo{:text "description"
                                                              :done false}
                                                 db/temporary-item-id  #:todo{:text "description"
                                                                              :done false}}
-                                 :ordered-ids (list "id1"  db/temporary-item-id)}
+                                 :todo/ordered-ids (list "id1"  db/temporary-item-id)}
                                 "new-id2"
                                 (db/create-todo-item "update 2" false))))))
