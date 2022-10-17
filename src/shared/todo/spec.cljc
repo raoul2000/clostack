@@ -26,5 +26,14 @@
               :todo/ordered-ids []})
 
 
+  (def some-id "id")
+  (s/valid? :todo/ordered-ids '("A" some-id))
+  (s/explain-str :todo/ordered-ids (list "A" some-id))
+  
+  (s/valid? :todo/list {some-id  {:todo/text "task 1"
+                                  :todo/done false}})
+  (s/valid? :todo/id some-id)
+  
+
   (s/valid? :todo/db my-db)
   (s/explain :todo/db my-db))

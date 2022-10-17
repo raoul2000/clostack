@@ -13,9 +13,8 @@
   "Create an returns an empty DB to manage todo list"
   []
   {:post [(s/valid? :todo/db %)]}
-  {:todo/list  {}
+  {:todo/list        {}
    :todo/ordered-ids []})
-
 
 (defn new-id []
   (str (random-uuid)))
@@ -72,8 +71,8 @@
 
 (defn commit-ordered-ids [ordered-ids todo-item-id new-id]
   (if (= temporary-item-id todo-item-id)
-    ;; a new item is added
-    (doall (map #(if (= temporary-item-id %) new-id %) ordered-ids))
+    ;; a new item is added 
+    (map #(if (= temporary-item-id %) new-id %) ordered-ids)
     ;; an existing item was updated: ordered ids not modified
     ordered-ids))
 
@@ -84,6 +83,6 @@
    :post [(s/valid? :todo/db %)]}
   (let [new-item-id (new-id)]
     (-> db
-        (update :todo/list   commit-edit-todo-item todo-id todo-item new-item-id)
+        (update :todo/list        commit-edit-todo-item todo-id todo-item new-item-id)
         (update :todo/ordered-ids commit-ordered-ids    todo-id new-item-id))))
 

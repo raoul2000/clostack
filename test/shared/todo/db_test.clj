@@ -48,7 +48,6 @@
 
 
 
-
 (deftest delete-item-from-list-test
   (testing "removing item from todo list"
     (is (= {"id2" #:todo{:text "another text", :done true}}
@@ -195,4 +194,15 @@
                                                                              :done false}}
                                  :todo/ordered-ids (list "id1"  db/temporary-item-id)}
                                 "new-id2"
-                                (db/create-todo-item "update 2" false))))))
+                                (db/create-todo-item "update 2" false)))))
+
+  (testing "commit a new todo item"
+    (let [result (db/commit-todo-item {:todo/list    {"id1"                 #:todo{:text "description1", :done false} 
+                                                       db/temporary-item-id #:todo{:text "description2", :done false}
+                                                      "new-id2"             #:todo{:text "description3", :done false}}
+                                       :todo/ordered-ids  (list "id1"  db/temporary-item-id "new-id2")}
+                                      db/temporary-item-id
+                                      (db/create-todo-item "update 2" false))]
+      (is (map? result))
+      )
+    ))
