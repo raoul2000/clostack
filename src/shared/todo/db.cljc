@@ -2,15 +2,19 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.string :as str]))
 
-(defn create-todo-item [text done]
+(defn create-todo-item 
+  "Given a *text* description and a *done*  flag, creates
+   and returns a *Todo* item"
+  [text done]
   {:pre [(s/valid? :todo/text  text)
          (s/valid? :todo/done  done)]
    :post [(s/valid? :todo/item %)]}
   {:todo/text  text
    :todo/done  done})
 
+
 (defn create
-  "Create an returns an empty DB to manage todo list"
+  "Create and returns an empty DB to manage todo list"
   []
   {:post [(s/valid? :todo/db %)]}
   {:todo/list        {}
@@ -40,10 +44,7 @@
 
 
 (defn add-item
-  "Add an *item* given its *id* and todo *db*.
-   
-   If *id* already exists the *db* is returns unchanged.
-   "
+  "Add an *item* given its *id* and todo *db*. If *id* already exists the *db* is returned unchanged."
   [db item-id item]
   {:pre [(s/valid? :todo/db  db)
          (s/valid? :todo/id  item-id)]
@@ -55,6 +56,7 @@
      (update :todo/ordered-ids conj item-id))))
 
 (defn delete-item
+  "Remove item with id *item-id* from the *db*" 
   [db item-id]
   (-> db
       (update :todo/list dissoc item-id)
