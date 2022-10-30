@@ -24,6 +24,7 @@
   (try
     (prepare-save-to-disk todo-file-path)
     (spit todo-file-path  todo-list)
+    todo-file-path
     (catch Exception e (str "Failed to prepare working dir: " (.getMessage e)))))
 
 (defn read-from-file []
