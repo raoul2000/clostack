@@ -20,14 +20,18 @@
   {:todo/list        {}
    :todo/ordered-ids []})
 
-(defn new-id []
+(defn new-id 
+  "Creates and returns a new identifier"
+  []
   (str (random-uuid)))
 
 (def temporary-item-id "tmp-id")
 
 (defn add-item-to-list
   "Assoc *new-item* to key *new-id* in the given todo list. When *new-id* is already
-   present in the todo list, its value is updated with *new-item*"
+   present in the todo list, its value is updated with *new-item*.
+   
+   Returns the updated *todo-list*."
   [todo-list new-id new-item]
   {:pre [(s/valid? :todo/list todo-list)
          (s/valid? :todo/id        new-id)
@@ -36,7 +40,11 @@
   (assoc todo-list new-id new-item))
 
 
-(defn delete-item-from-list [todo-list item-id]
+(defn delete-item-from-list 
+  "Removes item with id *item-id* from *todo-list*, a list of todo items.
+   
+   Returns the updated *todo-list*."
+  [todo-list item-id]
   {:pre [(s/valid? :todo/list todo-list)
          (s/valid? :todo/id  item-id)]
    :post [(s/valid? :todo/list %)]}
@@ -44,7 +52,8 @@
 
 
 (defn add-item
-  "Add an *item* given its *id* and todo *db*. If *id* already exists the *db* is returned unchanged."
+  "Add *item* with identifier *item-id* to the Todo Db *db* and returns the updated *db*. 
+   If an item with the same id already exists in *db*, nothing is done."
   [db item-id item]
   {:pre [(s/valid? :todo/db  db)
          (s/valid? :todo/id  item-id)]
@@ -56,7 +65,7 @@
      (update :todo/ordered-ids conj item-id))))
 
 (defn delete-item
-  "Remove item with id *item-id* from the *db*" 
+  "Remove item with id *item-id* from the *db* and returns updated *db*." 
   [db item-id]
   (-> db
       (update :todo/list dissoc item-id)
