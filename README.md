@@ -126,3 +126,24 @@ $ java -jar target/clostack-X.X.X.jar --help
 # start server at port 8808
 $ java -jar target/clostack-X.X.X.jar --port 8808
 ```
+
+## More ...
+
+### VSCode REST client
+
+This project includes the [REST Client extension](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) for VSCode. It requires minimal configuration to add to the `.vscode/settings.json` configuration file.
+
+
+```json
+"rest-client.environmentVariables": {
+	"local": {
+		"version": "v2",
+		"baseUrl": "http://localhost:8890"
+	}
+}
+```
+Update `baseUrl` property to match your settings customization.
+
+REST scripts are stored in `test/bask/http`.
+
+
