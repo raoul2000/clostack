@@ -1,14 +1,17 @@
 (ns core
   (:require [utils :refer [add-one]]
             [re-frame.core :as rf]
-            [default.app :as  default-app]))
+            [default.app :as  default-app]
+            [with-route.app :as routed-app]))
 
 ;; function 'add-one' is defined as a shared function
 (defn some-func [i]
   (add-one i))
 
 (defn run []
-  (default-app/render "root"))
+  (routed-app/render "root")
+  #_(default-app/render "root")
+  )
 
 
 ;;  Lifecycle Hooks =================================
