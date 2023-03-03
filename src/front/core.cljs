@@ -9,10 +9,17 @@
   (add-one i))
 
 (defn run []
-  (routed-app/render "root")
+  (routed-app/init "root")
+  #_(routed-app/render "root")
   #_(default-app/render "root")
   )
 
+(def debug? ^boolean goog.DEBUG)
+
+(defn dev-setup []
+  (when debug?
+    (enable-console-print!)
+    (js/console.log "%c -- dev mode --" "background: #2196f3; color: white")))
 
 ;;  Lifecycle Hooks =================================
 
@@ -21,6 +28,7 @@
 
 (defn ^:dev/after-load start []
   (js/console.log "after-load")
+  (dev-setup)
   (rf/clear-subscription-cache!)
   (run))
 
