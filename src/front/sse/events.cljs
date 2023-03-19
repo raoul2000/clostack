@@ -2,7 +2,8 @@
   (:require [re-frame.core :as rf]
             [ajax.core :as ajax]
             [sse.subs :refer [create-initial-state]]
-            [ajax.edn :refer [edn-response-format edn-request-format]]))
+            [ajax.edn :refer [edn-response-format edn-request-format]]
+            [oxbow.re-frame :as o]))
 
 (defn initialize-state-handler [_ _]
   (create-initial-state))
@@ -19,28 +20,15 @@
 ;; -------------------------------------------
 
 (rf/reg-event-db
- :start-counting-success
- (fn [db [_ response]]
-   (assoc db :couting-success response)))
-
-(rf/reg-event-db
- :start-counting-error
- (fn [db [_ response]]
-   (assoc db :counting-error response)))
-
-(defn start-counting-handler [cofx _]
-  {:db         (assoc (:db cofx) :counting true)
-   :fx         (or (:fx cofx) [])
-   :http-xhrio {:method          :get
-                :uri             "/sse-notif"
-                :timeout         8000                   ;; optional see API docs
-                :response-format (edn-response-format)  ;; IMPORTANT!: You must provide this.
-                :on-success      [:start-counting-success]
-                :on-failure      [:start-counting-error]}})
-
-(rf/reg-event-fx
- :start-couting
- start-counting-handler)
+ ::on-count-tick
+ (fn [db [_ {:keys [data] :as event}]]
+   #_(js/console.log data) 
+   (update db :counter-value conj data)))
 
 (defn >start-counting []
-  (rf/dispatch [:start-couting]))
+  (rf/dispatch [::o/sse-client {:id ::counter-events
+                                :uri "/sse-notif"
+                                :on-event [::on-count-tick]}]))
+
+(defn >stop-counting []
+  (rf/dispatch [::o/abort ::counter-events]))
