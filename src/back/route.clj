@@ -6,7 +6,11 @@
             [io.pedestal.http.body-params :refer [body-params]]
             [response :as resp]
             [todo :as todo]
-            [babashka.fs :as fs]))
+            [babashka.fs :as fs]
+            ;; sse 
+            [io.pedestal.http.sse :as sse]
+            [clojure.core.async :as async]
+            [clojure.core.async.impl.protocols :as chan]))
 
 (def common-interceptors [resp/coerce-body resp/content-negotiator (body-params)])
 
@@ -92,6 +96,15 @@
                             ;; "Content-Type" "image/jpg"
                             )))})
 
+;; GET /sse-notif -----------------------------------------------------------
+
+(defn stream-ready [event-chan context]
+  (dotimes [i 10]
+    (when-not (chan/closed? event-chan)
+      (async/>!! event-chan {:name "counter" :data i})
+      (Thread/sleep 500)))
+  (async/close! event-chan))
+
 ;; Routes -------------------------------------------------
 
 (def default-routes #{["/"       :get  [home] :route-name :home]
@@ -109,7 +122,13 @@
                                                download-file]           :route-name :get-download]
                       ;; todo resource 
                       ["/todo"   :get  (conj common-interceptors todo/read-todo-list)  :route-name :get-todo]
-                      ["/todo"   :post (conj common-interceptors todo/write-todo-list) :route-name :post-todo]})
+                      ["/todo"   :post (conj common-interceptors todo/write-todo-list) :route-name :post-todo]
+                      
+                      ;; SSE notifier
+                      ["/sse-notif" :get [(sse/start-event-stream stream-ready)] :route-name :get-sse-notif]
+
+                      ;;
+                      })
 
 (def routes
   (prt/expand-routes default-routes))
