@@ -98,7 +98,7 @@
 
 ;; GET /sse-notif -----------------------------------------------------------
 
-(defn stream-ready [event-chan context]
+(defn sse-counter-stream [event-chan context]
   (dotimes [i 10]
     (when-not (chan/closed? event-chan)
       (async/>!! event-chan {:name "counter" :data i})
@@ -125,7 +125,7 @@
                       ["/todo"   :post (conj common-interceptors todo/write-todo-list) :route-name :post-todo]
                       
                       ;; SSE notifier
-                      ["/sse-notif" :get [(sse/start-event-stream stream-ready)] :route-name :get-sse-notif]
+                      ["/sse-counter" :get [(sse/start-event-stream sse-counter-stream)] :route-name :get-sse-counter]
 
                       ;;
                       })

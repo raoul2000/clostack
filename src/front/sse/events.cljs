@@ -22,12 +22,12 @@
 (rf/reg-event-db
  ::on-count-tick
  (fn [db [_ {:keys [data] :as event}]]
-   #_(js/console.log data) 
+   (js/console.log event) 
    (update db :counter-value conj data)))
 
 (defn >start-counting []
   (rf/dispatch [::o/sse-client {:id ::counter-events
-                                :uri "/sse-notif"
+                                :uri "/sse-counter"
                                 :on-event [::on-count-tick]}]))
 
 (defn >stop-counting []

@@ -183,5 +183,5 @@
      (navbar)]]])
 
 (defn init [element-id]
-  (init-routes!) ;; Reset routes on figwheel reload
+  (init-routes!)
   (rdom/render [app-page] (js/document.getElementById element-id)))
