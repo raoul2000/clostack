@@ -14,6 +14,7 @@
 (def created   (partial response 201))
 (def accepted  (partial response 202))
 (def not-found (partial response 404))
+(def error-500 (partial response 500))
 
 
 ;; ----------------------------------------------------------------------------------

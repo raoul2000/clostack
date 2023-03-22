@@ -1,0 +1,43 @@
+
+# to test :
+# - in Browser JS console, start an SSE channel
+#   let sse1 = new EventSource('http://localhost:8890/sse-notif-job');
+#
+# - attach an event handler
+#   - for all incoming messages
+#     sse1.addEventListener('message', console.log);
+#
+#   - or for a specific message name
+#     sse1.addEventListener('notif-job', (e) => { console.log('notif-job',e); });
+#
+# When done go to the Network console and copy the channel-id value
+# Use it to initialize variable 'channel-id' below
+
+@channelId = 0a7d2c4f-c191-449f-9e1b-7343f7f2154f
+
+### Create a Job
+
+# executed asynchronously by the server - job state notification are received
+# in the channel 'channelId'
+
+POST {{baseUrl}}/job/{{channelId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+    "name": "myJobName",
+    "value": 12,
+    "stopOnError": false
+}
+
+### Missing job Params
+
+POST {{baseUrl}}/job
+Content-Type: application/json
+Accept: application/json
+
+
+### Open Job Notif channel
+
+# This call will never returns as the REST extension is not able to deal with an event stream :(
+GET {{baseUrl}}/sse-notif-job
