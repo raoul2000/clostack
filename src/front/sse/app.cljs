@@ -4,8 +4,10 @@
             [re-frame.core :as re-frame]
             [goog.string :as gstr]
             [day8.re-frame.http-fx]
-            [sse.events :refer [>initialize-state >start-counting >stop-counting]]
-            [sse.subs :refer [<counter-value]]))
+            [sse.events :refer [>initialize-state >start-counting >stop-counting
+                                >open-notif-job-channel >close-notif-job-channel
+                                >submit-job]]
+            [sse.subs :refer [<counter-value <notif-job-channel-id]]))
 
 
 (defn counter-value []
@@ -34,6 +36,16 @@
     [:a {:href "#", :class "card-footer-item", :on-click #(>stop-counting)}  "Stop Counter"]]])
 
 
+(defn async-job-card []
+  (let [notif-job-channel-id (<notif-job-channel-id)]
+    [:div
+     [:p (str "channel : "  (if notif-job-channel-id "OPEN" "CLOSED")  )]
+     [:button {:class "button", :on-click #(>open-notif-job-channel)} "Open Channel"] 
+     [:button {:class "button", :on-click #(>submit-job {:param 1} )} "Submit Job"]
+     [:button {:class "button", :on-click #(>close-notif-job-channel)} "Close Channel"]
+     
+     ]))
+
 (defn app-page []
   [:div
    [:section {:class "section"}
@@ -44,6 +56,8 @@
      [:div {:class "columns"}
       [:div {:class "column"}
        [endless-counter-card]]
+      [:div.column [async-job-card]]
+
       [:div {:class "column"} "Second column"]]]]])
 
 (defn init [element-id]

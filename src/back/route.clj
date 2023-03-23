@@ -110,6 +110,19 @@
 (defonce jobs (atom {}))
 (defonce job-notif-channel (atom {}))
 
+(comment
+
+  (map chan/closed? (vals @job-notif-channel))
+
+
+  (doseq [c @job-notif-channel]
+    (when-not (chan/closed? (second c))
+      (async/close! (second c))))
+  (reset! job-notif-channel {})
+
+  ;;
+  )
+
 (defn close-all-notif-job-channels []
   (doseq [notif-channel (vals @job-notif-channel)]
     (async/close! notif-channel))
@@ -120,14 +133,22 @@
     (future
       (let [notif-channel-id (:channel-id job-info)
             notif-channel    (get @job-notif-channel notif-channel-id)]
-        (printf "start job : %s" job-id)
-        (async/>!! notif-channel {:name "notif-job" :data (str "start job " job-id)})
-        (Thread/sleep 3000)
-        (printf "end job : %s" job-id)
-        (async/>!! notif-channel {:name "notif-job" :data (str "end job " job-id)}))
+
+        (async/>!! notif-channel {:name "notif-job-start" :data {:job-id job-id}})
+
+        (dotimes [n 10]
+          (Thread/sleep 250)
+          (async/>!! notif-channel {:name "notif-job-progress" :data {:job-id   job-id
+                                                                      :info    {:progress (inc n)}}}))
+
+        (async/>!! notif-channel {:name "notif-job-success" :data   {:job-id job-id
+                                                                     :info {:result (str "success for job " job-id)}}})
+
+        #_(async/>!! notif-channel {:name "notif-job-error" :data {:job-id job-id
+                                                                   :info {:error (str "somethin went wrong for job " job-id)}}}))
       true)))
 
-(defn sse-notif-job 
+(defn sse-notif-job
   "Creates an SSE channel dedicated to notify the client about submited job progress.
    The first message pushed to this SSE channel is the channel Id. This value must be used
    by the client on job submition request."
@@ -136,7 +157,7 @@
     (swap! job-notif-channel assoc channel-id event-chan)
     (async/>!! event-chan {:name "channel-id" :data channel-id})))
 
-(defn create-job 
+(defn create-job
   "Client creates a job and provide a *channel-id* to be notified about the job progress. The *channel-id* is
    obtains from `/sse-notif-job` path.
    
@@ -151,7 +172,13 @@
       :else             (let [job-id (str (random-uuid))]
                           (swap! jobs assoc job-id {:params     job-params
                                                     :channel-id (:channel-id path-params)})
-                          (job-runner job-id)
+
+                          ;; do not start the job immediately: the client must have the time to
+                          ;; process the response to create-job
+                          (future
+                            (Thread/sleep 1000)
+                            (job-runner job-id))
+
                           (resp/ok {:job-id job-id})))))
 
 ;; Routes -------------------------------------------------
