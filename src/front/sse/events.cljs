@@ -40,7 +40,21 @@
 ;; ------------------------------------- ::on-notif-job
 
 (defn on-notif-job-handler
-  "Handles job notification channel events"
+  "Handles job notification channel events sent by the server.
+   The format of the *data* argument is defined by convention between the server
+   and the client:
+   
+   - **channel-id** : data is string
+   - **all other** : data is EDN serialize to string
+
+   The EDN data has following shape : 
+   
+   ```
+   {:job-id \"55444-998-9898\"
+    :info   (see server spec) 
+   }
+   ```
+   "
   [db [_ {:keys [event data]}]]
    ;; 'channel-id' is the first event received by the channel. It provided
    ;; channel id value that must be used when submiting a job
