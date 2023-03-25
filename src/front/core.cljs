@@ -10,9 +10,8 @@
   (add-one i))
 
 (defn run []
-  (sse-app/init "root")
-  #_(routed-app/init "root")
-  #_(routed-app/render "root")
+  #_(sse-app/init "root")
+  (routed-app/init "root")
   #_(default-app/render "root")
   )
 

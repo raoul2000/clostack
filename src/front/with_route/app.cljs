@@ -17,6 +17,7 @@
    (apply rfe/push-state route)))
 
 (comment
+
   (rec/match-by-name router ::page-1)
   (rfe/push-state (rec/match-by-name router ::page-2))
 
@@ -65,12 +66,26 @@
   ([k params query]
    (rfe/href k params query)))
 
+(declare page-1)
+(declare page-2)
+(declare page-3)
+(declare page-username)
+
 
 ;; route definition
-(def routes [["/page1" ::page-1]
-             ["/page2" ::page-2]
-             ["/page3" ::page-3]
-             ["/username/:username" ::username-page]])
+(def routes1 [["/page1" ::page-1]
+              ["/page2" ::page-2]
+              ["/page3" ::page-3]
+              ["/username/:username" ::username-page]])
+
+(def routes [["/page1" {:name ::page-1
+                        :view page-1}]
+             ["/page2" {:name ::page-2
+                        :view page-2}]
+             ["/page3" {:name ::page-3
+                        :view page-3}]
+             ["/username/:username" {:name ::username-page
+                                     :view page-username}]])
 
 ;; create the router
 (def router (ref/router routes))
@@ -80,6 +95,21 @@
   (rec/route-names router)
   (rec/match-by-name router ::page-1)
   (rec/match-by-path router "/username/bob")
+
+  (let [{{:keys [name view]} :data :as all} (rec/match-by-path router "/username/bob")]
+    [all name view])
+
+
+  (let [{path-params :path-params
+         {name :name
+          view :view} :data} (rec/match-by-path router "/username/bob")]
+    [path-params name view])
+
+  (let [{path-params :path-params
+         {name :name
+          view :view} :data} (rec/match-by-path router "/page1")]
+    [path-params name view])
+
   ;;
   )
 
@@ -154,7 +184,9 @@
        [:a {:class "navbar-item"} "Report an issue"]]]]]])
 
 (defn navbar []
-  (let [current-route @(re-frame/subscribe [::current-route])]
+  (let [{path-params :path-params
+         {name :name
+          view :view} :data}  @(re-frame/subscribe [::current-route])]
     [:div
      (interpose " | " [[:a {:key 1
                             :href (href ::page-1)}  "page 1"]
@@ -164,7 +196,10 @@
                             :href (href ::page-3)} "page 3"]])
      [:hr]
      [:p "I'm displayed on all pages .. isn't that cool ?"]
-     (case (get-in current-route [:data :name])
+     (if view
+       (view path-params)
+       "no route match")
+     #_(case (get-in current-route [:data :name])
        :with-route.app/page-2 [page-2]
        :with-route.app/page-3 [page-3]
        :with-route.app/page-1 (page-1)
