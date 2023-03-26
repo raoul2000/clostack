@@ -8,6 +8,116 @@
             [reitit.frontend :as ref]
             [reitit.frontend.easy :as rfe]))
 
+;; helper function to create a URL string suitable to be used 
+;; as href anchor attribute value
+(defn href
+  "Return relative url for given route. Url can be used in HTML links.
+   Usage :
+   ```
+   [:a {:href (href ::page-1)}  \"Go to page 1\"]
+   [:a {:href (href ::username-page {:username \"bob\"})}  \"Go to Bob page\"]
+
+   ```
+   "
+  ([k]
+   (href k nil nil))
+  ([k params]
+   (href k params nil))
+  ([k params query]
+   (rfe/href k params query)))
+
+(defn redirect 
+  "Redirect browser page to *page-id*"
+  [page-id]
+  (re-frame/dispatch [::push-state page-id]))
+
+;; views ------------------------------------------------------------
+
+;; page-1 is just a static div with nothing fancy here
+(defn page-1 []
+  [:div "Hello from page 1"])
+
+;; page-2 contains a simple form with a local state to store user input (a name)
+;; When the form is submitted, the route to show username is called
+(defn page-2 []
+  (let [username        (rcore/atom "")
+        update-username #(reset! username (-> % .-target .-value))
+        submit-username #(re-frame/dispatch [::push-state ::username-page  {:username @username}])]
+    (fn []
+      [:div
+       [:div {:class "field"}
+        [:label {:class "label"} "Name"]
+        [:div {:class "control"}
+         [:input {:class "input", :type "text", :placeholder "enter username ... but 'bob' is not welcome"
+                  :value @username
+                  :on-change update-username}]]]
+
+       [:div {:class "field is-grouped"}
+        [:div {:class "control"}
+         [:button {:class "button is-link"
+                   :on-click submit-username}
+          "Submit"]]]])))
+
+(defn page-username 
+  "Displays the name entered by the user... but 'bob' is not welcome here
+   and will be redirected to the username form."
+  [{:keys [username]}]
+  (if (= "bob" username)
+    (do
+      (js/setTimeout #(redirect ::page-2) 2000)
+      [:div "You've been warned " username ". Go away !!"])
+    [:div (str "hello " username ", how are you going today ?")]))
+
+(defn page-3 []
+  [:div "Hello from page 3"])
+
+(defn top-navbar []
+  (let [{{name :name} :data}  @(re-frame/subscribe [::current-route])]
+
+    [:nav {:class "navbar is-fixed-top is-shadowless", :role "navigation", :aria-label "main navigation"}
+     [:div {:class "navbar-brand"}
+      [:a {:class "navbar-item", :href "https://bulma.io"}
+       [:img {:src "https://bulma.io/images/bulma-logo.png", :width "112", :height "28"}]]]
+     [:div {:id "navbarBasicExample", :class "navbar-menu"}
+      [:div {:class "navbar-start"}
+       [:a {:class (str "navbar-item " (when (= name ::page-1) " is-tab is-active"))
+            :href (href ::page-1)}  "page 1"]
+       [:a {:class (str "navbar-item " (when (= name ::page-2) " is-tab is-active"))
+            :href (href ::page-2)} "page 2"]
+      [:a {:class (str "navbar-item " (when (= name ::page-3) " is-tab is-active"))
+           :href (href ::page-3)} "page 3"]]
+      [:div {:class "navbar-end"}
+       [:div {:class "navbar-item has-dropdown is-hoverable"}
+        [:a {:class "navbar-link"} "More ..."]
+        [:div {:class "navbar-dropdown is-right"}
+         [:a {:class "navbar-item"} "option 1"]
+         [:a {:class "navbar-item"} "option 2"]
+         [:a {:class "navbar-item"} "option 3"]
+         [:hr {:class "navbar-divider"}]
+         [:a {:class "navbar-item"} "Report an issue"]]]]]]))
+
+(defn main []
+  (let [{path-params :path-params
+         {view :view} :data}  @(re-frame/subscribe [::current-route])]
+    [:div
+     [:hr]
+     #_[view path-params]
+     [#(if view 
+         (view path-params)
+         (redirect ::page-1))]]))
+
+(defn app-page []
+  [:div
+   (top-navbar)
+   [:section {:class "section"}
+    [:div {:class "container"}
+     [:h1 {:class "title"} "The Routed App"]
+     [:p {:class "subtitle"} "Powered by "
+      [:strong "Reitit"] " library"]
+     (main)]]])
+
+;; Routes -------------------------------------------------------------------------
+
 ;; create an effect to push a route to the browser history
 ;; Also trigger a call to the 'on-navigate' callback (see init-routes! below)
 (re-frame/reg-fx
@@ -17,10 +127,8 @@
    (apply rfe/push-state route)))
 
 (comment
-
   (rec/match-by-name router ::page-1)
   (rfe/push-state (rec/match-by-name router ::page-2))
-
 
   (rfe/push-state ::page-2)
   (rfe/push-state ::username-page [:username "bob"])
@@ -47,36 +155,6 @@
 (re-frame/reg-sub ::current-route
                   (fn [db]
                     (:current-route db)))
-
-;; helper function to create a URL string suitable to be used 
-;; as href anchor attribute value
-(defn href
-  "Return relative url for given route. Url can be used in HTML links.
-   Usage :
-   ```
-   [:a {:href (href ::page-1)}  \"Go to page 1\"]
-   [:a {:href (href ::username-page {:username \"bob\"})}  \"Go to Bob page\"]
-
-   ```
-   "
-  ([k]
-   (href k nil nil))
-  ([k params]
-   (href k params nil))
-  ([k params query]
-   (rfe/href k params query)))
-
-(declare page-1)
-(declare page-2)
-(declare page-3)
-(declare page-username)
-
-
-;; route definition
-(def routes1 [["/page1" ::page-1]
-              ["/page2" ::page-2]
-              ["/page3" ::page-3]
-              ["/username/:username" ::username-page]])
 
 (def routes [["/page1" {:name ::page-1
                         :view page-1}]
@@ -127,95 +205,7 @@
    on-navigate
    {:use-fragment true}))
 
-;; views ------------------------------------------------------------
-
-;; page-1 is just a static div with nothing fancy here
-(defn page-1 []
-  [:div "Hello from page 1"])
-
-;; page-2 contains a simple form with a local state to store user input (a name)
-;; When the form is submitted, the route to show username is called
-(defn page-2 []
-  (let [username        (rcore/atom "")
-        update-username #(reset! username (-> % .-target .-value))
-        submit-username #(re-frame/dispatch [::push-state ::username-page  {:username @username}])]
-    (fn []
-      [:div
-       [:div {:class "field"}
-        [:label {:class "label"} "Name"]
-        [:div {:class "control"}
-         [:input {:class "input", :type "text", :placeholder "enter username"
-                  :value @username
-                  :on-change update-username}]]]
-
-       [:div {:class "field is-grouped"}
-        [:div {:class "control"}
-         [:button {:class "button is-link"
-                   :on-click submit-username}
-          "Submit"]]]])))
-
-(defn page-3 []
-  [:div "Hello from page 3"])
-
-(defn page-username [{:keys [username]}]
-  (if (= "bob" username)
-    (do
-      (js/setTimeout #(re-frame/dispatch [::push-state ::page-2]) 2000)
-      [:div "Go away !!"])
-    [:div (str "username " username)]))
-
-(defn new-navbar []
-  [:nav {:class "navbar is-fixed-top is-transparent", :role "navigation", :aria-label "main navigation"}
-   [:div {:class "navbar-brand"}
-    [:a {:class "navbar-item", :href "https://bulma.io"}
-     [:img {:src "https://bulma.io/images/bulma-logo.png", :width "112", :height "28"}]]]
-   [:div {:id "navbarBasicExample", :class "navbar-menu"}
-    [:div {:class "navbar-start"}
-     [:a {:class "navbar-item"} "hello"]
-     [:a {:class "navbar-item"} "item"]]
-    [:div {:class "navbar-end"}
-     [:div {:class "navbar-item has-dropdown is-hoverable"}
-      [:a {:class "navbar-link"} "More ..."]
-      [:div {:class "navbar-dropdown is-right"}
-       [:a {:class "navbar-item"} "option 1"]
-       [:a {:class "navbar-item"} "option 2"]
-       [:a {:class "navbar-item"} "option 3"]
-       [:hr {:class "navbar-divider"}]
-       [:a {:class "navbar-item"} "Report an issue"]]]]]])
-
-(defn navbar []
-  (let [{path-params :path-params
-         {name :name
-          view :view} :data}  @(re-frame/subscribe [::current-route])]
-    [:div
-     (interpose " | " [[:a {:key 1
-                            :href (href ::page-1)}  "page 1"]
-                       [:a {:key 2
-                            :href (href ::page-2)} "page 2"]
-                       [:a {:key 3
-                            :href (href ::page-3)} "page 3"]])
-     [:hr]
-     [:p "I'm displayed on all pages .. isn't that cool ?"]
-     (if view
-       (view path-params)
-       "no route match")
-     #_(case (get-in current-route [:data :name])
-       :with-route.app/page-2 [page-2]
-       :with-route.app/page-3 [page-3]
-       :with-route.app/page-1 (page-1)
-       :with-route.app/username-page (page-username (:path-params current-route))
-       "no route match found")]))
-
-(defn app-page []
-  [:div
-   (new-navbar)
-   [:section {:class "section"}
-
-    [:div {:class "container"}
-     [:h1 {:class "title"} "The Routed App"]
-     [:p {:class "subtitle"} "Powered by "
-      [:strong "Reitit"] " library"]
-     (navbar)]]])
+;; ---------------------------------------------------------------------------
 
 (defn init [element-id]
   (init-routes!)
