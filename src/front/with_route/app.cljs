@@ -26,7 +26,7 @@
   ([k params query]
    (rfe/href k params query)))
 
-(defn redirect 
+(defn redirect
   "Redirect browser page to *page-id*"
   [page-id]
   (re-frame/dispatch [::push-state page-id]))
@@ -58,7 +58,7 @@
                    :on-click submit-username}
           "Submit"]]]])))
 
-(defn page-username 
+(defn page-username
   "Displays the name entered by the user... but 'bob' is not welcome here
    and will be redirected to the username form."
   [{:keys [username]}]
@@ -84,8 +84,8 @@
             :href (href ::page-1)}  "page 1"]
        [:a {:class (str "navbar-item " (when (= name ::page-2) " is-tab is-active"))
             :href (href ::page-2)} "page 2"]
-      [:a {:class (str "navbar-item " (when (= name ::page-3) " is-tab is-active"))
-           :href (href ::page-3)} "page 3"]]
+       [:a {:class (str "navbar-item " (when (= name ::page-3) " is-tab is-active"))
+            :href (href ::page-3)} "page 3"]]
       [:div {:class "navbar-end"}
        [:div {:class "navbar-item has-dropdown is-hoverable"}
         [:a {:class "navbar-link"} "More ..."]
@@ -98,13 +98,13 @@
 
 (defn main []
   (let [{path-params :path-params
-         {view :view} :data}  @(re-frame/subscribe [::current-route])]
+         {view :view, name :name} :data}  @(re-frame/subscribe [::current-route])]
     [:div
      [:hr]
      #_[view path-params]
-     [#(if view 
+     [#(when view
          (view path-params)
-         (redirect ::page-1))]]))
+         #_(redirect ::page-1))]]))
 
 (defn app-page []
   [:div
